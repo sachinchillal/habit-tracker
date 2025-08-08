@@ -1,5 +1,23 @@
-<!-- <div class="flex space-x-2 m-2">
-  <a *ngFor="let nav of navLinks" [routerLink]="nav.path" routerLinkActive="active"
-    class="px-3 rounded text-blue-500 hover:underline">{{ nav.label }}</a>
-</div> -->
-<router-outlet />
+<div class="m-2">
+  <div class="flex space-x-2 mb-2">
+    <a *ngFor="let nav of navLinks" [routerLink]="nav.path" routerLinkActive="active"
+      class="px-3 rounded text-blue-500 hover:underline">{{ nav.label }}</a>
+
+    <i class="text-gray-500">
+      |
+    </i>
+    <button type="button" class="secondary-btn btn-sm"
+      [class.active]="themeService.currentThemeType === THEME_TYPE.AUTO"
+      (click)="themeService.changeTheme(THEME_TYPE.AUTO)">Auto</button>
+    <button type="button" class="secondary-btn btn-sm"
+      [class.active]="themeService.currentThemeType === THEME_TYPE.DARK"
+      (click)="themeService.changeTheme(THEME_TYPE.DARK)">Dark</button>
+    <button type="button" class="secondary-btn btn-sm"
+      [class.active]="themeService.currentThemeType === THEME_TYPE.LIGHT"
+      (click)="themeService.changeTheme(THEME_TYPE.LIGHT)">Light</button>
+  </div>
+
+  <router-outlet />
+</div>
+<app-loader *ngIf="appService.isLoading"></app-loader>
+<app-toast></app-toast>

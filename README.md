@@ -30,5 +30,16 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
 
 ```bash
 npm install tailwindcss @tailwindcss/postcss postcss --force
-npx tailwindcss init
+
+ng serve -o --host 0.0.0.0
+
+ng g c components/loader
+ng g c components/home
+ng g c components/toast
+
+ng g s services/theme
+
+# To deploy
+npm run b
+
 ```

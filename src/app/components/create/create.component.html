@@ -1,0 +1,54 @@
+<div class="flex items-center justify-center min-h-screen-none p-4">
+  <div class="w-full max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
+    <!-- Form Header -->
+    <div class="p-8 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Create New Task</h1>
+      <p class="mt-2 text-gray-600 dark:text-gray-300">Fill out the details below to add a new task to your schedule.
+      </p>
+    </div>
+
+    <!-- Form Body -->
+    <form class="p-8 space-y-6" (ngSubmit)="onSubmit()">
+      <!-- Title Field -->
+      <div>
+        <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Title</label>
+        <input type="text" [(ngModel)]="task.title" id="title" name="title" placeholder="e.g., Team Meeting"
+          class="block w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-300">
+      </div>
+
+      <!-- Description Field -->
+      <div>
+        <label for="description"
+          class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Description</label>
+        <textarea id="description" name="description" rows="4" [(ngModel)]="task.description"
+          placeholder="e.g., Discuss project milestones for the upcoming quarter..."
+          class="block w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-300"></textarea>
+
+      </div>
+
+      <!-- Date and Time Fields -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label for="date" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Date</label>
+          <input type="date" id="date" name="date" [(ngModel)]="task.date"
+            class="block w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-300">
+
+        </div>
+        <div>
+          <label for="time" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Time</label>
+          <input type="time" id="time" name="time" [(ngModel)]="task.time"
+            class="block w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-300">
+
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="pt-4 flex justify-end">
+        <button type="submit"
+          class="px-8 py-3 font-semibold text-white bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg shadow-md hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 transform hover:scale-105 transition-transform duration-300">
+          Save Task
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

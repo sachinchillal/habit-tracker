@@ -1,0 +1,53 @@
+<div class="lg:p-8">
+  <!-- Header -->
+  <header class="text-center mb-8">
+    <h1 class="text-4xl sm:text-5xl font-bold text-slate-800 tracking-tight">My Tasks</h1>
+    <p class="text-slate-500 mt-2">A clean and simple way to manage your daily to-dos.</p>
+    <button type="button" class="primary-btn btn-sm" (click)="ut_refreshTask()">Refresh</button>
+  </header>
+
+  <!-- Task List -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
+    <!-- Use *ngFor to loop through tasks -->
+    <div *ngFor="let task of appService.tasks; let index=index; trackBy: trackTaskById"
+      class="flex items-center p-4 bg-white dark:bg-black rounded-xl shadow-sm border border-slate-200a border-blue-500/50 transition-all duration-300 ease-in-out"
+      [ngClass]="{'opacity-50': task.isDone, 'opacity-100': !task.isDone}">
+      <!-- Custom Checkbox -->
+      <button (click)="handleToggleComplete(task.id)"
+        class="flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out mr-4"
+        [ngClass]="task.isDone ? 'bg-green-500 border-green-500' : 'border-slate-300 bg-white-none hover:border-green-500'"
+        [attr.aria-label]="task.isDone ? 'Mark task as incomplete' : 'Mark task as complete'">
+        <!-- Check icon shown conditionally with *ngIf -->
+        <svg *ngIf="task.isDone" class="w-4 h-4 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </button>
+
+      <!-- Task Text -->
+      <span class="flex-grow text-lg transition-all duration-300 ease-in-out"
+        [ngClass]="task.isDone ? 'line-through-none text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200'">
+        {{ task.title }}
+      </span>
+
+      <span class="ml-4 flex-shrink-0 text-slate-600">{{index+1}}</span>
+
+      <!-- Delete Button -->
+      <!-- <button (click)="handleDeleteTask(task.id)"
+        class="ml-4 flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-slate-400 transition-all duration-300 ease-in-out hover:bg-red-50 hover:text-red-500"
+        [attr.aria-label]="'Delete task: ' + task.title">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button> -->
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="appService.tasks.length === 0"
+    class="text-center p-12 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200">
+    <h2 class="text-2xl font-semibold text-slate-600">All tasks completed!</h2>
+    <p class="text-slate-400 mt-2">Add a new task to get started.</p>
+  </div>
+
+</div>
