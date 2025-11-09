@@ -1,0 +1,24 @@
+<form (ngSubmit)="onSubmit()">
+  <div class="flex flex-col gap-2 p-4 border dark:border-gray-700 rounded shadow">
+
+    <input type="text" placeholder="Title" [(ngModel)]="task.title" name="title"
+      class="border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white" />
+    <textarea class="border p-2 rounded resize-none min-h-[80px] dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+      placeholder="Description" [(ngModel)]="task.description" name="description"></textarea>
+
+    <select [(ngModel)]="task.categoryId" name="categoryId" placeholder="Select Category"
+      class="border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+      <option value="undefined" selected>Select Category</option>
+      <option *ngFor="let category of appService.categories" [value]="category.id">{{ category.title }}</option>
+    </select>
+    <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50" type="submit"
+      [disabled]="!task.title.trim()">
+      {{ task.id ? 'Update Category' : 'Create Category' }}
+    </button>
+    <ng-container *ngIf="task.id">
+      <button title="Cancel Edit" type="reset" (click)="resetForm()"
+        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-red-900">Cancel Edit
+      </button>
+    </ng-container>
+  </div>
+</form>

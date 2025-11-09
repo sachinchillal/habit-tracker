@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "s": "ng serve",
     "start": "ng serve",
     "build": "ng build",
     "b": "ng build --base-href=/habit-tracker/",

@@ -1,0 +1,26 @@
+<div class="p-4">
+  <div class="flex items-center mb-4">
+    <h2 class="text-xl font-bold mb-4">Categories
+      <span class="text-xs text-gray-500 ml-2">({{appService.categories.length}})</span>
+    </h2>
+    <i class="ms-auto"></i>
+    <button type="button" class="primary-btn btn-sm" (click)="appService.fetchCategories()">Refresh</button>
+  </div>
+  <ul class="space-y-2">
+    <li *ngFor="let c of appService.categories; let index=index; trackBy: trackCategoryById"
+      class="relative rounded shadow p-2 border border-gray-200 dark:border-gray-700">
+      <div class="mb-2">{{c.title}}</div>
+      <div class="flex gap-2 items-center">
+        <div class="text-xs text-gray-500">{{c.id | date:'medium'}}</div>
+        <i class="ms-auto"></i>
+        <button title="Delete Note" aria-label="Delete Note" (click)="handleDelete(c)"
+          class="p-1 hover:bg-red-900 rounded">
+          &#128465;
+        </button>
+        <button title="Edit Note" aria-label="Edit Note" (click)="handleEdit(c)" class="p-1 hover:bg-blue-900 rounded">
+          &#9999;
+        </button>
+      </div>
+    </li>
+  </ul>
+</div>

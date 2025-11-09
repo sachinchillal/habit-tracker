@@ -23,6 +23,7 @@ export interface Task extends DateProps {
   time: string;
   isDone: boolean;
   isActive: boolean;
+  categoryId?: number; // Optional category ID
 }
 export const INIT_TASK: Task = {
   id: 0,
@@ -34,6 +35,13 @@ export const INIT_TASK: Task = {
   isActive: false,
   createdAt: +new Date(),
   updatedAt: +new Date()
+}
+export interface Category extends Task {
+  tasks: Task[];
+}
+export const INIT_CATEGORY: Category = {
+  ...INIT_TASK,
+  tasks: []
 }
 
 export interface HT_Status extends DateProps {
@@ -96,3 +104,14 @@ export enum THEME_TYPE {
   DARK = 'dark',
   LIGHT = 'light'
 };
+
+export enum ACTIONS {
+  EDIT_CATEGORY = "EDIT_CATEGORY",
+  EDIT_TASK = "EDIT_TASK"
+}
+
+export enum PAGES {
+  TASKS,
+  TODOS,
+  GROUPED_TODOS
+}

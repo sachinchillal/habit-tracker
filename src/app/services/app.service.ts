@@ -1,11 +1,16 @@
-import { Injectable } from '@angular/core';
-import { HT_Status, HT_Tracker, INIT_DAY_INFO, Task } from './interfaces';
+import { EventEmitter, Injectable } from '@angular/core';
+import { ACTIONS, Category, HT_Status, HT_Tracker, INIT_DAY_INFO, PAGES, Task } from './interfaces';
 import { ApiService } from './api.service';
 
 const LOCAL_STORAGE_KEY = 'habit_tracker';
 interface LocalStorageData {
+  categories: Category[];
   tasks: Task[];
   trackers: HT_Tracker[];
+}
+interface AppEventEmitter {
+  action: ACTIONS,
+  data: Task | Category
 }
 
 @Injectable({
@@ -14,16 +19,27 @@ interface LocalStorageData {
 export class AppService {
   isLoading: boolean = false;
 
+  readonly categories: Category[] = [];
   readonly tasks: Task[] = [];
   readonly trackers: HT_Tracker[] = [];
   tasksMap: { [key: number]: Task } = {};
   trackersMap: { [key: number]: HT_Tracker } = {};
+  categoriesMap: { [key: number]: Category } = {};
+
+  eventEmitter = new EventEmitter<AppEventEmitter>();
+
+  currentPage: PAGES = PAGES.TASKS;
 
   constructor(private apiService: ApiService) {
     this.initStore();
   }
-  public initStore() {
+  private initStore() {
     const d = this.getLocalStorage();
+    if (d.categories && d.categories.length > 0) {
+      this.assignCategories(d.categories);
+    } else {
+      this.fetchCategories();
+    }
     if (d.tasks && d.tasks.length > 0) {
       this.assignTasks(d.tasks);
     } else {
@@ -34,6 +50,65 @@ export class AppService {
     } else {
       this.fetchTrackers();
     }
+  }
+  // Public
+  setCurrentPage(page: PAGES) {
+    this.currentPage = page;
+    switch (page) {
+      case PAGES.TODOS:
+        this.rearrangeTasksForTodos();
+        break;
+      case PAGES.TASKS:
+        this.rearrangeTasksForTasksPage();
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  private rearrangeTasksForTodos() {
+    // show unfinished tasks first
+    const todoTasks = this.tasks.filter(task => !task.isDone);
+    const combinedTasks = todoTasks.concat(this.tasks.filter(task => task.isDone));
+    this.tasks.length = 0;
+    this.tasks.push(...combinedTasks);
+  }
+
+  private rearrangeTasksForTasksPage() {
+    // show all tasks
+    this.tasks.sort((a, b) => a.id - b.id);
+  }
+
+
+  // CATEGORIES
+  public fetchCategories() {
+    this.isLoading = true;
+    this.apiService.getCategories().subscribe({
+      next: (tasks: any) => {
+        this.saveCategories(tasks.data);
+      },
+      error: (error) => { },
+      complete: () => {
+        this.isLoading = false;
+      }
+    });
+  }
+
+  public saveCategories(categories: Category[]): void {
+    this.assignCategories(categories);
+    const d = this.getLocalStorage();
+    d.categories = this.categories;
+    this.saveToLocalStorage(d);
+  }
+  private assignCategories(categories: Category[]): void {
+    this.categories.length = 0; // Clear existing categories
+    this.categories.push(...categories);
+    this.categoriesMap = {}; // Reset the category map
+    this.categories.forEach(c => {
+      // Initialize the task map for quick access
+      this.categoriesMap[c.id] = c;
+    });
   }
   // TASKS
   public fetchTasks() {
@@ -71,9 +146,11 @@ export class AppService {
     this.apiService.getTrackers().subscribe({
       next: (res: any) => {
         this.saveTrackers(Object.values(res.data));
+        this.setCurrentPage(this.currentPage); // to rearrange tasks if on todos page
       },
       error: (error) => {
         console.error('Error fetching trackers:', error);
+        this.isLoading = false;
       },
       complete: () => {
         this.isLoading = false;
@@ -198,7 +275,7 @@ export class AppService {
 
   private getLocalStorage(): LocalStorageData {
     const data = localStorage.getItem(LOCAL_STORAGE_KEY);
-    return data ? JSON.parse(data) : { tasks: [], trackers: [] };
+    return data ? JSON.parse(data) : { tasks: [], trackers: [], categories: [] };
   }
   private saveToLocalStorage(d: LocalStorageData): void {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(d));

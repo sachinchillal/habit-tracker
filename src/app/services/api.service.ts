@@ -12,12 +12,32 @@ export class ApiService {
   constructor(private httpClient: HttpClient) { }
 
   // App API Requests
+  categoryCreate(category: Task) {
+    return this.httpClient.post(API + 'habitTracker/category', category);
+  }
+  categoryUpdate(category: Task) {
+    return this.httpClient.put(API + 'habitTracker/category', category);
+  }
+  categoryDelete(id: number) {
+    return this.httpClient.delete(API + 'habitTracker/category/' + id);
+  }
+  getCategories() {
+    return this.httpClient.get(API + 'habitTracker/category');
+  }
+
+  taskCreate(task: Task) {
+    return this.httpClient.post(API + 'habitTracker/task', task);
+  }
+  taskUpdate(task: Task) {
+    return this.httpClient.put(API + 'habitTracker/task', task);
+  }
+  taskDelete(id: number) {
+    return this.httpClient.delete(API + 'habitTracker/task/' + id);
+  }
   getTasks() {
     return this.httpClient.get(API + 'habitTracker/task');
   }
-  createTask(task: Task) {
-    return this.httpClient.post(API + 'habitTracker/task', task);
-  }
+
   markTaskCompleted(id: number) {
     return this.httpClient.get(API + 'habitTracker/check/' + id);
   }

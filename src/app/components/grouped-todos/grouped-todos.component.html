@@ -1,0 +1,36 @@
+<div class="lg:p-8">
+  <!-- Header -->
+  <header class="flex items-center justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight inline mr-4">My ToDos</h1>
+      <p class="text-slate-500 dark:text-slate-400 inline">A clean and simple way to manage your daily to-dos.</p>
+    </div>
+    <button type="button" class="primary-btn btn-sm" (click)="ut_refreshTask()">Refresh</button>
+  </header>
+
+  <!-- Grouped Tasks List -->
+  <div *ngIf="groupedTasks.length > 0" class="space-y-6">
+    <div *ngFor="let category of groupedTasks" class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 p-6">
+      <!-- Category Header -->
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold text-slate-700 dark:text-slate-300">{{ category.title || 'Uncategorized' }}</h2>
+        <span class="text-sm text-slate-500 dark:text-slate-400">{{ category.tasks.length }} task{{ category.tasks.length !== 1 ? 's' : '' }}</span>
+      </div>
+      
+      <!-- Tasks Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
+        <app-checkbox-item *ngFor="let task of category.tasks; let index=index; trackBy: trackTaskById" 
+          [task]="task" [index]="index" (toggleComplete)="handleToggleComplete($event)">
+        </app-checkbox-item>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="groupedTasks.length === 0"
+    class="text-center p-12 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200">
+    <h2 class="text-2xl font-semibold text-slate-600">All tasks completed!</h2>
+    <p class="text-slate-400 mt-2">Add a new task to get started.</p>
+  </div>
+
+</div>

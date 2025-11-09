@@ -1,0 +1,22 @@
+<div class="flex items-center p-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all duration-300 ease-in-out"
+  [ngClass]="{'opacity-50': task.isDone, 'opacity-100': !task.isDone}">
+  <!-- Custom Checkbox -->
+  <button (click)="onToggleComplete()"
+    class="flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out mr-4"
+    [ngClass]="task.isDone ? 'bg-green-500 border-green-500' : 'border-slate-300 bg-white dark:bg-slate-800 hover:border-green-500'"
+    [attr.aria-label]="task.isDone ? 'Mark task as incomplete' : 'Mark task as complete'">
+    <!-- Check icon shown conditionally with *ngIf -->
+    <svg *ngIf="task.isDone" class="w-4 h-4 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+  </button>
+
+  <!-- Task Text -->
+  <span class="flex-grow text-lg transition-all duration-300 ease-in-out"
+    [ngClass]="task.isDone ? 'text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200'">
+    {{ task.title }}
+  </span>
+
+  <span class="ml-4 flex-shrink-0 text-slate-600 dark:text-slate-400">{{index+1}}</span>
+</div>

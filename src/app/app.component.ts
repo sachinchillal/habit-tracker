@@ -19,7 +19,10 @@ export class AppComponent {
   readonly navLinks = [
     { path: '/home', label: 'Dashboard' },
     { path: '/create', label: 'Create' },
+    { path: '/todos', label: 'ToDos' },
+    { path: '/grouped-todos', label: 'Grouped ToDos' },
     { path: '/list', label: 'List' },
+    { path: '/category', label: 'Category' },
   ]
   readonly THEME_TYPE = TT;
 

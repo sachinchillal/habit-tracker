@@ -8,20 +8,19 @@ import { PAGES, TOAST_TYPE } from '../../services/interfaces';
 import { CheckboxItemComponent } from '../checkbox-item/checkbox-item.component';
 
 @Component({
-  selector: 'app-list',
+  selector: 'app-todos',
   standalone: true,
   imports: [FormsModule, CommonModule, CheckboxItemComponent],
-  templateUrl: './list.component.html',
-  styleUrl: './list.component.scss'
+  templateUrl: './todos.component.html',
+  styleUrl: './todos.component.scss'
 })
-export class ListComponent implements OnInit {
+export class TodosComponent implements OnInit {
 
   constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService) { }
 
   ngOnInit(): void {
-    this.appService.setCurrentPage(PAGES.TASKS);
+    this.appService.setCurrentPage(PAGES.TODOS);
   }
-
   ut_refreshTask() {
     this.appService.fetchTasks();
   }

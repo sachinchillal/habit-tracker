@@ -37,6 +37,18 @@ ng g c components/loader
 ng g c components/home
 ng g c components/toast
 
+ng g c components/category
+ng g c components/category-list
+ng g c components/category-list
+
+ng g c components/task
+ng g c components/task-create
+ng g c components/task-list
+
+ng g c components/todos
+ng g c components/grouped-todos
+ng g c components/checkbox-item
+
 ng g s services/theme
 
 # To deploy

@@ -2,7 +2,7 @@
   <!-- Header -->
   <header class="flex items-center justify-between gap-4 mb-8">
     <div>
-      <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight inline mr-4">My Tasks</h1>
+      <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight inline mr-4">My ToDos</h1>
       <p class="text-slate-500 dark:text-slate-400 inline">A clean and simple way to manage your daily to-dos.</p>
     </div>
     <button type="button" class="primary-btn btn-sm" (click)="ut_refreshTask()">Refresh</button>
@@ -11,11 +11,8 @@
   <!-- Task List -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
     <!-- Use *ngFor to loop through tasks -->
-    <app-checkbox-item 
-      *ngFor="let task of appService.tasks; let index=index; trackBy: trackTaskById"
-      [task]="task"
-      [index]="index"
-      (toggleComplete)="handleToggleComplete($event)">
+    <app-checkbox-item *ngFor="let task of appService.tasks; let index=index; trackBy: trackTaskById" [task]="task"
+      [index]="index" (toggleComplete)="handleToggleComplete($event)">
     </app-checkbox-item>
   </div>
 
