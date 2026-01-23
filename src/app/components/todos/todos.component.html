@@ -1,11 +1,17 @@
 <div class="lg:p-8">
   <!-- Header -->
-  <header class="flex items-center justify-between gap-4 mb-8">
-    <div>
-      <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight inline mr-4">My ToDos</h1>
+  <header class="flex flex-wrap items-center justify-between gap-4 mb-8">
+    <div class="flex-grow">
+      <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight inline mr-4">My ToDos
+        <span
+          class="text-sm font-normal text-slate-500 dark:text-slate-400">({{appService.noOfTasksDone}}/{{appService.tasks.length}})</span>
+      </h1>
       <p class="text-slate-500 dark:text-slate-400 inline">A clean and simple way to manage your daily to-dos.</p>
     </div>
+    <input type="search" class="border dark:border-slate-700 rounded-md p-2" placeholder="Search tasks..."
+      [(ngModel)]="appService.searchText" (ngModelChange)="appService.onSearch()" />
     <button type="button" class="primary-btn btn-sm" (click)="ut_refreshTask()">Refresh</button>
+
   </header>
 
   <!-- Task List -->

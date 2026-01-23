@@ -13,7 +13,7 @@
     </select>
     <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50" type="submit"
       [disabled]="!task.title.trim()">
-      {{ task.id ? 'Update Category' : 'Create Category' }}
+      {{ task.id ? 'Update Task' : 'Create Task' }}
     </button>
     <ng-container *ngIf="task.id">
       <button title="Cancel Edit" type="reset" (click)="resetForm()"

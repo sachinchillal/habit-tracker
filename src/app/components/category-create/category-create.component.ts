@@ -51,8 +51,6 @@ export class CategoryCreateComponent implements OnInit {
           } else {
             this.toastService.showToastAuto('Error', 'An unknown error occurred.', TOAST_TYPE.ERROR);
           }
-        },
-        complete: () => {
           this.appService.isLoading = false;
         }
       });
@@ -69,8 +67,6 @@ export class CategoryCreateComponent implements OnInit {
           } else {
             this.toastService.showToastAuto('Error', 'An unknown error occurred.', TOAST_TYPE.ERROR);
           }
-        },
-        complete: () => {
           this.appService.isLoading = false;
         }
       });

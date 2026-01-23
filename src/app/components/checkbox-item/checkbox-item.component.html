@@ -1,22 +1,69 @@
-<div class="flex items-center p-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all duration-300 ease-in-out"
-  [ngClass]="{'opacity-50': task.isDone, 'opacity-100': !task.isDone}">
+<div
+  class="task-card group relative flex items-center px-4 py-2 bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-lg border border-slate-200 dark:border-slate-700 transition-all duration-300 ease-in-out hover:-translate-y-0.5"
+  [ngClass]="{'opacity-60 task-completed': task.isDone, 'opacity-100': !task.isDone}">
+
   <!-- Custom Checkbox -->
   <button (click)="onToggleComplete()"
-    class="flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out mr-4"
-    [ngClass]="task.isDone ? 'bg-green-500 border-green-500' : 'border-slate-300 bg-white dark:bg-slate-800 hover:border-green-500'"
+    class="flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out mr-4 group-hover:scale-110"
+    [ngClass]="task.isDone ? 'bg-gradient-to-r from-green-500 to-green-600 border-green-500 shadow-lg' : 'border-slate-300 bg-white dark:bg-slate-800 hover:border-green-500 hover:shadow-md'"
     [attr.aria-label]="task.isDone ? 'Mark task as incomplete' : 'Mark task as complete'">
     <!-- Check icon shown conditionally with *ngIf -->
     <svg *ngIf="task.isDone" class="w-4 h-4 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
       fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="20 6 9 17 4 12"></polyline>
     </svg>
+    <!-- Plus icon for incomplete tasks -->
+    <svg *ngIf="!task.isDone" class="w-4 h-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
   </button>
 
-  <!-- Task Text -->
-  <span class="flex-grow text-lg transition-all duration-300 ease-in-out"
-    [ngClass]="task.isDone ? 'text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200'">
-    {{ task.title }}
-  </span>
+  <!-- Task Content -->
+  <div class="flex-grow min-w-0">
+    <!-- Task Title -->
+    <div class="flex items-center gap-3">
+      <span class="text-lg font-medium transition-all duration-300 ease-in-out truncate"
+        [ngClass]="task.isDone ? 'text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200'">
+        {{ task.title }}
+      </span>
 
-  <span class="ml-4 flex-shrink-0 text-slate-600 dark:text-slate-400">{{index+1}}</span>
+      <!-- Task Status Badge -->
+      <!-- <span class="px-2 py-1 text-xs font-semibold rounded-full transition-all duration-300"
+        [ngClass]="task.isDone ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'">
+        {{ task.isDone ? 'Done' : 'Pending' }}
+      </span> -->
+    </div>
+
+    <!-- Task Description (if available) -->
+    <p *ngIf="task.description && task.description.trim()" class="text-sm text-slate-500 dark:text-slate-400 truncate">
+      {{ task.description }}
+    </p>
+    <p *ngIf="task.lastUpdated" class="text-xs opacity-60 truncate" [ngClass]="task.lastUpdatedColor">
+      {{ task.lastUpdated }}</p>
+
+    <!-- Task Date/Time (if available) -->
+    <div *ngIf="task.date || task.time" class="flex items-center gap-2 mt-2">
+      <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <span class="text-xs text-slate-500 dark:text-slate-400">
+        {{ task.date }} {{ task.time ? 'at ' + task.time : '' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Task Number -->
+  <div class="flex-shrink-0 ml-4">
+    <span
+      class="inline-flex items-center justify-center w-8 h-8 text-sm font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 rounded-full transition-all duration-300 group-hover:bg-slate-200 dark:group-hover:bg-slate-600">
+      {{index+1}}
+    </span>
+  </div>
+
+  <!-- Completion Animation Overlay -->
+  <div *ngIf="task.isDone"
+    class="absolute inset-0 bg-gradient-to-r from-green-500/10 to-green-600/10 rounded-xl pointer-events-none"></div>
 </div>

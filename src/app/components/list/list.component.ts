@@ -53,9 +53,6 @@ export class ListComponent implements OnInit {
           this.toastService.showToastAuto('Error', 'An unknown error occurred.', TOAST_TYPE.ERROR);
         }
         this.appService.isLoading = false;
-      },
-      complete: () => {
-        this.appService.isLoading = false;
       }
     });
   }

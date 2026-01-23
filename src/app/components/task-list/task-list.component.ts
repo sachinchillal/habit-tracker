@@ -42,6 +42,36 @@ export class TaskListComponent {
       },
     });
   }
+  handlePause(task: Task) {
+    this.apiService.pauseTask(task.id).subscribe({
+      next: (response) => {
+        this.toastService.showToastAuto('Success', 'Task paused successfully.', 'success');
+        this.appService.fetchTrackers();
+      },
+      error: (error) => {
+        if (error.error && error.error.message) {
+          this.toastService.showToastAuto('Error', error.error.message, 'error');
+        } else {
+          this.toastService.showToastAuto('Error', 'An unknown error occurred.', 'error');
+        }
+      },
+    });
+  }
+  handleResume(task: Task) {
+    this.apiService.resumeTask(task.id).subscribe({
+      next: (response) => {
+        this.toastService.showToastAuto('Success', 'Task resumed successfully.', 'success');
+        this.appService.fetchTrackers();
+      },
+      error: (error) => {
+        if (error.error && error.error.message) {
+          this.toastService.showToastAuto('Error', error.error.message, 'error');
+        } else {
+          this.toastService.showToastAuto('Error', 'An unknown error occurred.', 'error');
+        }
+      },
+    });
+  }
   handleEdit(task: Task) {
     this.appService.eventEmitter.emit({ action: ACTIONS.EDIT_TASK, data: task });
   }

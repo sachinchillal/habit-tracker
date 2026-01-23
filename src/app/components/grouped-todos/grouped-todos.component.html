@@ -1,36 +1,102 @@
-<div class="lg:p-8">
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 lg:p-8">
   <!-- Header -->
   <header class="flex items-center justify-between gap-4 mb-8">
-    <div>
-      <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight inline mr-4">My ToDos</h1>
-      <p class="text-slate-500 dark:text-slate-400 inline">A clean and simple way to manage your daily to-dos.</p>
+    <div class="flex items-center gap-4">
+      <div class="p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent tracking-tight">My ToDos</h1>        
+        <p class="text-slate-500 dark:text-slate-400 mt-1">Organize and track your daily tasks ({{appService.tasks.length}}) by category ({{appService.categories.length}})</p>
+      </div>
     </div>
-    <button type="button" class="primary-btn btn-sm" (click)="ut_refreshTask()">Refresh</button>
+    <button type="button" 
+      class="group relative px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 ease-out"
+      (click)="ut_refreshTask()">
+      <div class="flex items-center gap-2">
+        <svg class="w-5 h-5 group-hover:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+        Refresh
+      </div>
+    </button>
   </header>
 
   <!-- Grouped Tasks List -->
-  <div *ngIf="groupedTasks.length > 0" class="space-y-6">
-    <div *ngFor="let category of groupedTasks" class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 p-6">
+  <div *ngIf="groupedTasks.length > 0" class="space-y-8">
+    <div *ngFor="let category of groupedTasks; let i = index" 
+      class="grouped-category-card group relative bg-white dark:bg-slate-800 rounded-2xl shadow-lg hover:shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transition-all duration-300 ease-out hover:-translate-y-1">
+      
       <!-- Category Header -->
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-semibold text-slate-700 dark:text-slate-300">{{ category.title || 'Uncategorized' }}</h2>
-        <span class="text-sm text-slate-500 dark:text-slate-400">{{ category.tasks.length }} task{{ category.tasks.length !== 1 ? 's' : '' }}</span>
+      <div class="relative p-6 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 border-b border-slate-200 dark:border-slate-600">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <!-- Category Icon -->
+            <div class="p-3 rounded-xl shadow-md"
+              [ngClass]="getCategoryColor(i)">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-200">{{ category.title || 'Uncategorized' }}</h2>
+              <div class="flex items-center gap-4 mt-1">
+                <span class="text-sm text-slate-500 dark:text-slate-400">{{ category.tasks.length }} task{{ category.tasks.length !== 1 ? 's' : '' }}</span>
+                <span class="text-sm text-slate-500 dark:text-slate-400">•</span>
+                <span class="text-sm text-slate-500 dark:text-slate-400">{{ getCompletedCount(category.tasks) }} completed</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Progress Ring -->
+          <div class="relative w-16 h-16">
+            <svg class="w-16 h-16 transform -rotate-90" viewBox="0 0 36 36">
+              <path class="text-slate-200 dark:text-slate-600" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+              <path class="text-blue-500" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"
+                [attr.stroke-dasharray]="getProgressDashArray(category.tasks)"
+                [attr.stroke-dashoffset]="getProgressDashOffset(category.tasks)"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ getCompletionPercentage(category.tasks) }}%</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div class="mt-4 w-full bg-slate-200 dark:bg-slate-600 rounded-full h-2">
+          <div class="progress-bar h-2 rounded-full transition-all duration-500 ease-out"
+            [ngClass]="getCategoryColor(i, true)"
+            [style.width.%]="getCompletionPercentage(category.tasks)"></div>
+        </div>
       </div>
       
       <!-- Tasks Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
-        <app-checkbox-item *ngFor="let task of category.tasks; let index=index; trackBy: trackTaskById" 
-          [task]="task" [index]="index" (toggleComplete)="handleToggleComplete($event)">
-        </app-checkbox-item>
+      <div class="p-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <app-checkbox-item *ngFor="let task of category.tasks; let index=index; trackBy: trackTaskById" 
+            [task]="task" [index]="index" (toggleComplete)="handleToggleComplete($event)">
+          </app-checkbox-item>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Empty State -->
   <div *ngIf="groupedTasks.length === 0"
-    class="text-center p-12 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200">
-    <h2 class="text-2xl font-semibold text-slate-600">All tasks completed!</h2>
-    <p class="text-slate-400 mt-2">Add a new task to get started.</p>
+    class="text-center p-16 bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700">
+    <div class="mx-auto w-24 h-24 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 rounded-full flex items-center justify-center mb-6 floating-icon">
+      <svg class="w-12 h-12 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+      </svg>
+    </div>
+    <h2 class="text-3xl font-bold text-slate-700 dark:text-slate-300 mb-4">All tasks completed!</h2>
+    <p class="text-slate-500 dark:text-slate-400 text-lg mb-8">Great job! Add a new task to keep the momentum going.</p>
+    <button class="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 ease-out">
+      Add New Task
+    </button>
   </div>
 
 </div>

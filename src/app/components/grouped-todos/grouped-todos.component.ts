@@ -36,8 +36,8 @@ export class GroupedTodosComponent implements OnInit {
             categoriesMap[categoryId].tasks = [task];
           }
         } else {
-          if(this.appService.categoriesMap[categoryId]) {
-            categoriesMap[categoryId] = {...this.appService.categoriesMap[categoryId]};
+          if (this.appService.categoriesMap[categoryId]) {
+            categoriesMap[categoryId] = { ...this.appService.categoriesMap[categoryId] };
             categoriesMap[categoryId].tasks = [task];
           } else {
             console.log('Category not found for ID:', categoryId);
@@ -95,11 +95,71 @@ export class GroupedTodosComponent implements OnInit {
           this.toastService.showToastAuto('Error', 'An unknown error occurred.', TOAST_TYPE.ERROR);
         }
         this.appService.isLoading = false;
-      },
-      complete: () => {
-        this.appService.isLoading = false;
       }
     });
+  }
+
+  /**
+   * Get the number of completed tasks in a category
+   * @param tasks - Array of tasks
+   * @returns Number of completed tasks
+   */
+  getCompletedCount(tasks: any[]): number {
+    return tasks.filter(task => task.isDone).length;
+  }
+
+  /**
+   * Get the completion percentage for a category
+   * @param tasks - Array of tasks
+   * @returns Completion percentage (0-100)
+   */
+  getCompletionPercentage(tasks: any[]): number {
+    if (tasks.length === 0) return 0;
+    const completed = this.getCompletedCount(tasks);
+    return Math.round((completed / tasks.length) * 100);
+  }
+
+  /**
+   * Get the progress dash array for the circular progress indicator
+   * @param tasks - Array of tasks
+   * @returns Dash array string for SVG
+   */
+  getProgressDashArray(tasks: any[]): string {
+    const circumference = 2 * Math.PI * 15.9155; // radius = 15.9155
+    return `${circumference} ${circumference}`;
+  }
+
+  /**
+   * Get the progress dash offset for the circular progress indicator
+   * @param tasks - Array of tasks
+   * @returns Dash offset for SVG
+   */
+  getProgressDashOffset(tasks: any[]): string {
+    const circumference = 2 * Math.PI * 15.9155; // radius = 15.9155
+    const percentage = this.getCompletionPercentage(tasks);
+    return `${circumference - (percentage / 100) * circumference}`;
+  }
+
+  /**
+   * Get category color based on index
+   * @param index - Category index
+   * @param isGradient - Whether to return gradient classes
+   * @returns CSS classes for category color
+   */
+  getCategoryColor(index: number, isGradient: boolean = false): string {
+    const colors = [
+      'bg-gradient-to-r from-blue-500 to-blue-600',
+      'bg-gradient-to-r from-purple-500 to-purple-600',
+      'bg-gradient-to-r from-green-500 to-green-600',
+      'bg-gradient-to-r from-orange-500 to-orange-600',
+      'bg-gradient-to-r from-pink-500 to-pink-600',
+      'bg-gradient-to-r from-indigo-500 to-indigo-600',
+      'bg-gradient-to-r from-teal-500 to-teal-600',
+      'bg-gradient-to-r from-red-500 to-red-600'
+    ];
+
+    const colorIndex = index % colors.length;
+    return colors[colorIndex];
   }
 
 }

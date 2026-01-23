@@ -21,6 +21,15 @@
           class="p-1 hover:bg-red-900 rounded">
           &#128465;
         </button>
+
+        <button *ngIf="!c.isPaused" title="Pause Task" aria-label="Pause Task" (click)="handlePause(c)"
+          class="p-1 hover:bg-yellow-900 rounded">
+          &#9208;
+        </button>
+        <button *ngIf="c.isPaused" title="Resume Task" aria-label="Resume Task" (click)="handleResume(c)"
+          class="p-1 hover:bg-yellow-900 rounded">
+          &#9205;
+        </button>
         <button title="Edit Note" aria-label="Edit Note" (click)="handleEdit(c)" class="p-1 hover:bg-blue-900 rounded">
           &#9999;
         </button>

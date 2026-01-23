@@ -21,6 +21,8 @@ export class AppService {
 
   readonly categories: Category[] = [];
   readonly tasks: Task[] = [];
+  readonly tasksOriginal: Task[] = [];
+  noOfTasksDone: number = 0;
   readonly trackers: HT_Tracker[] = [];
   tasksMap: { [key: number]: Task } = {};
   trackersMap: { [key: number]: HT_Tracker } = {};
@@ -29,6 +31,8 @@ export class AppService {
   eventEmitter = new EventEmitter<AppEventEmitter>();
 
   currentPage: PAGES = PAGES.TASKS;
+
+  searchText: string = '';
 
   constructor(private apiService: ApiService) {
     this.initStore();
@@ -66,18 +70,48 @@ export class AppService {
         break;
     }
   }
+  private timeoutId: any;
+  onSearch() {
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+    }
+    this.timeoutId = setTimeout(() => {
+      // Implement search logic here
+      console.log('Searching for:', this.searchText);
+      this.tasks.length = 0;
+      if (this.searchText.trim() === '') {
+        this.tasks.push(...this.tasksOriginal);
+      } else {
+        const searchLower = this.searchText.toLowerCase();
+        const filteredTasks = this.tasksOriginal.filter(task =>
+          task.title.toLowerCase().includes(searchLower) ||
+          (task.description && task.description.toLowerCase().includes(searchLower))
+        );
+        this.tasks.push(...filteredTasks);
+      }
+      this.timeoutId = null;
+    }, 300);
+  }
 
   private rearrangeTasksForTodos() {
-    // show unfinished tasks first
     const todoTasks = this.tasks.filter(task => !task.isDone);
-    const combinedTasks = todoTasks.concat(this.tasks.filter(task => task.isDone));
+    const combinedTasks = todoTasks.concat(this.tasks.filter(task => task.isDone)).filter(t => !t.isPaused);
+    combinedTasks.sort((a, b) => (a.lastUpdatedAt - b.lastUpdatedAt));
     this.tasks.length = 0;
     this.tasks.push(...combinedTasks);
+
+    const todoTasksOriginal = this.tasksOriginal.filter(task => !task.isDone);
+    const combinedTasksOriginal = todoTasksOriginal.concat(this.tasksOriginal.filter(task => task.isDone)).filter(t => !t.isPaused);
+    combinedTasksOriginal.sort((a, b) => (a.lastUpdatedAt - b.lastUpdatedAt));
+    this.tasksOriginal.length = 0;
+    this.tasksOriginal.push(...combinedTasksOriginal);
   }
 
   private rearrangeTasksForTasksPage() {
     // show all tasks
     this.tasks.sort((a, b) => a.id - b.id);
+
+    this.tasksOriginal.sort((a, b) => a.id - b.id);
   }
 
 
@@ -87,11 +121,11 @@ export class AppService {
     this.apiService.getCategories().subscribe({
       next: (tasks: any) => {
         this.saveCategories(tasks.data);
-      },
-      error: (error) => { },
-      complete: () => {
         this.isLoading = false;
-      }
+      },
+      error: (error) => {
+        this.isLoading = false;
+      },
     });
   }
 
@@ -116,9 +150,9 @@ export class AppService {
     this.apiService.getTasks().subscribe({
       next: (tasks: any) => {
         this.saveTasks(tasks.data);
+        this.isLoading = false;
       },
-      error: (error) => { },
-      complete: () => {
+      error: () => {
         this.isLoading = false;
       }
     });
@@ -133,6 +167,8 @@ export class AppService {
   private assignTasks(tasks: Task[]): void {
     this.tasks.length = 0; // Clear existing tasks
     this.tasks.push(...tasks);
+    this.tasksOriginal.length = 0; // Clear existing original tasks
+    this.tasksOriginal.push(...tasks);
     this.tasksMap = {}; // Reset the task map
     this.tasks.forEach(task => {
       // Initialize the task map for quick access
@@ -147,12 +183,10 @@ export class AppService {
       next: (res: any) => {
         this.saveTrackers(Object.values(res.data));
         this.setCurrentPage(this.currentPage); // to rearrange tasks if on todos page
+        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error fetching trackers:', error);
-        this.isLoading = false;
-      },
-      complete: () => {
         this.isLoading = false;
       }
     });
@@ -180,7 +214,7 @@ export class AppService {
   }
   private buildUIPropsForTasks() {
     this.tasks.forEach(task => {
-      const t = this.trackersMap[task.id]
+      const t = this.trackersMap[task.id];
       if (t && t.status.length > 0) {
         const lastStatus = t.status[t.status.length - 1];
         const lastCreatedAt = new Date(lastStatus.createdAt);
@@ -190,8 +224,35 @@ export class AppService {
           lastCreatedAt.getMonth() === today.getMonth() &&
           lastCreatedAt.getFullYear() === today.getFullYear();
         task.isDone = isToday && lastStatus.isDone;
+
+        if (task.isDone) {
+          task.lastUpdated = '';
+        } else {
+          const differenceInDays = Math.floor((today.getTime() - lastCreatedAt.getTime()) / (1000 * 60 * 60 * 24));
+          const differenceInHours = Math.floor((today.getTime() - lastCreatedAt.getTime()) / (1000 * 60 * 60));
+          if (differenceInDays === 0) {
+            if (differenceInHours === 0) {
+              task.lastUpdated = 'a few moments ago';
+              task.lastUpdatedColor = 'text-green-500 dark:text-green-400';
+            } else {
+              task.lastUpdated = `${differenceInHours} hours ago`;
+              task.lastUpdatedColor = 'text-green-200 dark:text-green-100';
+            }
+          } else {
+            if (differenceInDays === 1) {
+              task.lastUpdated = 'Yesterday';
+              task.lastUpdatedColor = 'text-green-600 dark:text-green-500';
+            } else {
+              task.lastUpdated = `${differenceInDays} days ago`;
+              task.lastUpdatedColor = 'text-red-500 dark:text-red-400';
+            }
+          }
+        }
+        task.lastUpdatedAt = lastStatus.createdAt;
+        task.isPaused = t.paused;
       }
     });
+    this.noOfTasksDone = this.tasks.filter(t => t.isDone).length;
   }
   private buildUIPropsForTrackers() {
     this.trackers.forEach(tracker => {
@@ -213,7 +274,7 @@ export class AppService {
           const di = { ...INIT_DAY_INFO };
           di.id = tracker.daysList.length + 1;
           di.status = "Missed";
-          di.color = 'bg-rose-500';
+          di.color = 'bg-rose-900';
 
           di.createdAt = new Date(preStatus.createdAt).getTime() + (day - preStatus.day) * 24 * 60 * 60 * 1000; // Increment day by day
           tracker.daysList.push(di);
@@ -223,7 +284,7 @@ export class AppService {
         const di = { ...INIT_DAY_INFO };
         di.id = tracker.daysList.length + 1;
         di.status = s.isDone ? 'Done' : 'Missed';
-        di.color = s.isDone ? 'bg-emerald-500' : 'bg-rose-500';
+        di.color = s.isDone ? 'bg-emerald-500' : 'bg-rose-900';
         di.createdAt = s.createdAt;
         tracker.daysList.push(di);
 
@@ -231,7 +292,7 @@ export class AppService {
         const di = { ...INIT_DAY_INFO };
         di.id = 1;
         di.status = s.isDone ? 'Done' : 'Missed';
-        di.color = s.isDone ? 'bg-emerald-500' : 'bg-rose-500';
+        di.color = s.isDone ? 'bg-emerald-500' : 'bg-rose-900';
         di.createdAt = s.createdAt;
         tracker.daysList.push(di);
       }
@@ -259,7 +320,7 @@ export class AppService {
           const di = { ...INIT_DAY_INFO };
           di.id = tracker.daysList.length + 1;
           di.status = "Missed";
-          di.color = 'bg-rose-500';
+          di.color = 'bg-rose-900';
           di.createdAt = new Date(day).getTime(); // Increment day by day
           tracker.daysList.push(di);
         }
@@ -268,6 +329,11 @@ export class AppService {
         di.id = tracker.daysList.length + 1;
         tracker.daysList.push(di);
       }
+      // take only last 34 days info
+      if (tracker.daysList.length > 35) {
+        tracker.daysList = tracker.daysList.slice(-35);
+      }
+      console.log(tracker.daysList.length);
     }
   }
 

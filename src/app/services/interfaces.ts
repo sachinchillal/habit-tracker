@@ -23,7 +23,12 @@ export interface Task extends DateProps {
   time: string;
   isDone: boolean;
   isActive: boolean;
+  // UI properties
   categoryId?: number; // Optional category ID
+  lastUpdatedAt: number;
+  lastUpdated: string;
+  lastUpdatedColor: string;
+  isPaused: boolean;
 }
 export const INIT_TASK: Task = {
   id: 0,
@@ -34,7 +39,11 @@ export const INIT_TASK: Task = {
   isDone: false,
   isActive: false,
   createdAt: +new Date(),
-  updatedAt: +new Date()
+  updatedAt: +new Date(),
+  lastUpdatedAt: 0,
+  lastUpdated: '',
+  lastUpdatedColor: 'text-slate-red dark:text-red-400',
+  isPaused: false
 }
 export interface Category extends Task {
   tasks: Task[];
@@ -49,8 +58,9 @@ export interface HT_Status extends DateProps {
   isDone: boolean;
 }
 export interface HT_Pause_History extends DateProps {
-  startDay: number;
-  endDay: number;
+  // startDay: number;
+  // endDay: number;
+  paused: boolean;
 }
 export interface HT_Tracker extends DateProps {
   id: number;

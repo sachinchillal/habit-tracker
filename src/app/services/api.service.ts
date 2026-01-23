@@ -44,4 +44,10 @@ export class ApiService {
   getTrackers() {
     return this.httpClient.get(API + 'habitTracker/trackers');
   }
+  pauseTask(id: number) {
+    return this.httpClient.put(API + 'habitTracker/pause/' + id, {});
+  }
+  resumeTask(id: number) {
+    return this.httpClient.put(API + 'habitTracker/resume/' + id, {});
+  }
 }
