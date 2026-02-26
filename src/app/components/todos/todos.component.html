@@ -8,25 +8,58 @@
       </h1>
       <p class="text-slate-500 dark:text-slate-400 inline">A clean and simple way to manage your daily to-dos.</p>
     </div>
+    <div>
+      <!-- add date and time picker -->
+      <input type="date" class="border dark:border-slate-700 rounded-md p-2" [(ngModel)]="appService.date" />
+      <input type="time" class="border dark:border-slate-700 rounded-md p-2" [(ngModel)]="appService.time" />
+      <!-- add clear button -->
+      <button type="button" class="secondary-btn btn-sm"
+        (click)="appService.date = ''; appService.time = '';">Clear</button>
+    </div>
+
     <input type="search" class="border dark:border-slate-700 rounded-md p-2" placeholder="Search tasks..."
       [(ngModel)]="appService.searchText" (ngModelChange)="appService.onSearch()" />
     <button type="button" class="primary-btn btn-sm" (click)="ut_refreshTask()">Refresh</button>
 
+    <!-- List / Board view toggle -->
+    <div class="flex rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <button type="button"
+        class="px-3 py-2 text-sm font-medium transition-colors"
+        [ngClass]="viewMode === 'list' ? 'bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200' : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400'"
+        (click)="viewMode = 'list'">
+        List
+      </button>
+      <button type="button"
+        class="px-3 py-2 text-sm font-medium border-l border-slate-200 dark:border-slate-700 transition-colors"
+        [ngClass]="viewMode === 'board' ? 'bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200' : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400'"
+        (click)="viewMode = 'board'">
+        Board
+      </button>
+    </div>
   </header>
 
-  <!-- Task List -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
-    <!-- Use *ngFor to loop through tasks -->
-    <app-checkbox-item *ngFor="let task of appService.tasks; let index=index; trackBy: trackTaskById" [task]="task"
-      [index]="index" (toggleComplete)="handleToggleComplete($event)">
-    </app-checkbox-item>
-  </div>
+  <!-- List view: Task grid -->
+  <ng-container *ngIf="viewMode === 'list'">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
+      <app-checkbox-item *ngFor="let task of appService.tasks; let index=index; trackBy: trackTaskById" [task]="task"
+        [index]="index" (toggleComplete)="handleToggleComplete($event)">
+      </app-checkbox-item>
+    </div>
+    <div *ngIf="appService.tasks.length === 0"
+      class="text-center p-12 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200">
+      <h2 class="text-2xl font-semibold text-slate-600">All tasks completed!</h2>
+      <p class="text-slate-400 mt-2">Add a new task to get started.</p>
+    </div>
+  </ng-container>
 
-  <!-- Empty State -->
-  <div *ngIf="appService.tasks.length === 0"
-    class="text-center p-12 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200">
-    <h2 class="text-2xl font-semibold text-slate-600">All tasks completed!</h2>
-    <p class="text-slate-400 mt-2">Add a new task to get started.</p>
-  </div>
+  <!-- Board view: Kanban -->
+  <section *ngIf="viewMode === 'board'" class="mt-4" aria-label="Kanban board">
+    <app-kanban-board (toggleComplete)="handleToggleComplete($event)"></app-kanban-board>
+    <div *ngIf="appService.tasks.length === 0"
+      class="text-center p-12 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 mt-4">
+      <h2 class="text-2xl font-semibold text-slate-600">No tasks yet</h2>
+      <p class="text-slate-400 mt-2">Add a new task to see it on the board.</p>
+    </div>
+  </section>
 
 </div>

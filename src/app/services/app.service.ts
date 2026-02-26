@@ -32,6 +32,8 @@ export class AppService {
 
   currentPage: PAGES = PAGES.TASKS;
 
+  date: string = '';
+  time: string = '';
   searchText: string = '';
 
   constructor(private apiService: ApiService) {
@@ -59,11 +61,14 @@ export class AppService {
   setCurrentPage(page: PAGES) {
     this.currentPage = page;
     switch (page) {
+      case PAGES.CREATE:
+        this.rearrangeTasksForPageCreate();
+        break;
       case PAGES.TODOS:
-        this.rearrangeTasksForTodos();
+        this.rearrangeTasksForPageTodos();
         break;
       case PAGES.TASKS:
-        this.rearrangeTasksForTasksPage();
+        this.rearrangeTasksForPageList();
         break;
 
       default:
@@ -76,38 +81,49 @@ export class AppService {
       clearTimeout(this.timeoutId);
     }
     this.timeoutId = setTimeout(() => {
-      // Implement search logic here
-      console.log('Searching for:', this.searchText);
-      this.tasks.length = 0;
-      if (this.searchText.trim() === '') {
-        this.tasks.push(...this.tasksOriginal);
-      } else {
-        const searchLower = this.searchText.toLowerCase();
-        const filteredTasks = this.tasksOriginal.filter(task =>
-          task.title.toLowerCase().includes(searchLower) ||
-          (task.description && task.description.toLowerCase().includes(searchLower))
-        );
-        this.tasks.push(...filteredTasks);
-      }
+      this.applySearchFilter();
       this.timeoutId = null;
     }, 300);
   }
 
-  private rearrangeTasksForTodos() {
-    const todoTasks = this.tasks.filter(task => !task.isDone);
-    const combinedTasks = todoTasks.concat(this.tasks.filter(task => task.isDone)).filter(t => !t.isPaused);
-    combinedTasks.sort((a, b) => (a.lastUpdatedAt - b.lastUpdatedAt));
+  private applySearchFilter() {
+    // Implement search logic here
+    console.log('Searching for:', this.searchText);
     this.tasks.length = 0;
-    this.tasks.push(...combinedTasks);
+    if (this.searchText.trim() === '') {
+      this.tasks.push(...this.tasksOriginal);
+    } else {
+      const searchLower = this.searchText.toLowerCase();
+      const filteredTasks = this.tasksOriginal.filter(task =>
+        task.title.toLowerCase().includes(searchLower) ||
+        (task.description && task.description.toLowerCase().includes(searchLower))
+      );
+      this.tasks.push(...filteredTasks);
+    }
+  }
 
+  private rearrangeTasksForPageCreate() {
+    // show all tasks
+    this.tasks.sort((a, b) => a.title.localeCompare(b.title));
+  }
+  private rearrangeTasksForPageTodos() {
+    // First rearrange tasksOriginal
     const todoTasksOriginal = this.tasksOriginal.filter(task => !task.isDone);
     const combinedTasksOriginal = todoTasksOriginal.concat(this.tasksOriginal.filter(task => task.isDone)).filter(t => !t.isPaused);
     combinedTasksOriginal.sort((a, b) => (a.lastUpdatedAt - b.lastUpdatedAt));
     this.tasksOriginal.length = 0;
     this.tasksOriginal.push(...combinedTasksOriginal);
+
+    // Then apply search filter if active, otherwise use all tasksOriginal
+    if (this.searchText.trim() !== '') {
+      this.applySearchFilter();
+    } else {
+      this.tasks.length = 0;
+      this.tasks.push(...this.tasksOriginal);
+    }
   }
 
-  private rearrangeTasksForTasksPage() {
+  private rearrangeTasksForPageList() {
     // show all tasks
     this.tasks.sort((a, b) => a.id - b.id);
 
@@ -130,6 +146,7 @@ export class AppService {
   }
 
   public saveCategories(categories: Category[]): void {
+    categories.sort((a, b) => a.title.localeCompare(b.title));
     this.assignCategories(categories);
     const d = this.getLocalStorage();
     d.categories = this.categories;
@@ -213,7 +230,8 @@ export class AppService {
     this.buildUIPropsForTrackers();
   }
   private buildUIPropsForTasks() {
-    this.tasks.forEach(task => {
+    // Update tasksOriginal to ensure all tasks are updated, not just filtered ones
+    this.tasksOriginal.forEach(task => {
       const t = this.trackersMap[task.id];
       if (t && t.status.length > 0) {
         const lastStatus = t.status[t.status.length - 1];
@@ -252,7 +270,13 @@ export class AppService {
         task.isPaused = t.paused;
       }
     });
-    this.noOfTasksDone = this.tasks.filter(t => t.isDone).length;
+    // Calculate noOfTasksDone from tasksOriginal to get accurate count
+    this.noOfTasksDone = this.tasksOriginal.filter(t => t.isDone).length;
+
+    // Re-apply search filter immediately if there's an active search
+    if (this.searchText.trim() !== '') {
+      this.applySearchFilter();
+    }
   }
   private buildUIPropsForTrackers() {
     this.trackers.forEach(tracker => {

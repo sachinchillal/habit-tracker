@@ -6,15 +6,17 @@ import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
 import { PAGES, TOAST_TYPE } from '../../services/interfaces';
 import { CheckboxItemComponent } from '../checkbox-item/checkbox-item.component';
+import { KanbanBoardComponent } from '../kanban-board/kanban-board.component';
 
 @Component({
   selector: 'app-todos',
   standalone: true,
-  imports: [FormsModule, CommonModule, CheckboxItemComponent],
+  imports: [FormsModule, CommonModule, CheckboxItemComponent, KanbanBoardComponent],
   templateUrl: './todos.component.html',
   styleUrl: './todos.component.scss'
 })
 export class TodosComponent implements OnInit {
+  viewMode: 'list' | 'board' = 'list';
 
   constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService) { }
 
@@ -40,8 +42,17 @@ export class TodosComponent implements OnInit {
    * @param {number} id - The ID of the task to toggle.
    */
   handleToggleComplete(id: number) {
+    console.log('handleToggleComplete', id);
+    console.log('appService.tasks', this.appService.date, this.appService.time);
     this.appService.isLoading = true;
-    this.apiService.markTaskCompleted(id).subscribe({
+    let timestamp = 0;
+    if (this.appService.date && this.appService.time) {
+      timestamp = new Date(this.appService.date + " " + this.appService.time).getTime();
+    }
+    console.log('timestamp', timestamp);
+    const apiCall = timestamp > 0 ? this.apiService.markTaskCompletedByTimestamp(id, timestamp) : this.apiService.markTaskCompleted(id);
+    // return;
+    apiCall.subscribe({
       next: (response) => {
         this.appService.fetchTrackers();
       },

@@ -121,6 +121,7 @@ export enum ACTIONS {
 }
 
 export enum PAGES {
+  CREATE,
   TASKS,
   TODOS,
   GROUPED_TODOS

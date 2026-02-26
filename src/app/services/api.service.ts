@@ -41,6 +41,9 @@ export class ApiService {
   markTaskCompleted(id: number) {
     return this.httpClient.get(API + 'habitTracker/check/' + id);
   }
+  markTaskCompletedByTimestamp(id: number, timestamp: number) {
+    return this.httpClient.get(API + 'habitTracker/check/' + id + "/" + timestamp);
+  }
   getTrackers() {
     return this.httpClient.get(API + 'habitTracker/trackers');
   }
