@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { CategoryListComponent } from '../category-list/category-list.component';
-import { CategoryCreateComponent } from '../category-create/category-create.component';
+import { CategoryListComponent } from '../../components/category-list/category-list.component';
+import { CategoryCreateComponent } from '../../components/category-create/category-create.component';
 
 @Component({
   selector: 'app-category',

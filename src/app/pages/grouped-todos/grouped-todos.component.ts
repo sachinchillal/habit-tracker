@@ -5,7 +5,7 @@ import { AppService } from '../../services/app.service';
 import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
 import { Category, INIT_CATEGORY, PAGES, TOAST_TYPE } from '../../services/interfaces';
-import { CheckboxItemComponent } from '../checkbox-item/checkbox-item.component';
+import { CheckboxItemComponent } from '../../components/checkbox-item/checkbox-item.component';
 
 @Component({
   selector: 'app-grouped-todos',

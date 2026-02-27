@@ -5,8 +5,15 @@ import { AppService } from '../../services/app.service';
 import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
 import { PAGES, TOAST_TYPE } from '../../services/interfaces';
-import { CheckboxItemComponent } from '../checkbox-item/checkbox-item.component';
-import { KanbanBoardComponent } from '../kanban-board/kanban-board.component';
+import { Category } from '../../services/interfaces';
+import { CheckboxItemComponent } from '../../components/checkbox-item/checkbox-item.component';
+import { KanbanBoardComponent } from '../../components/kanban-board/kanban-board.component';
+
+export interface CategoryCount {
+  id: number | 'uncategorized';
+  title: string;
+  count: number;
+}
 
 @Component({
   selector: 'app-todos',
@@ -17,8 +24,43 @@ import { KanbanBoardComponent } from '../kanban-board/kanban-board.component';
 })
 export class TodosComponent implements OnInit {
   viewMode: 'list' | 'board' = 'list';
+  showCategoriesModal = false;
+  scrollToColumnId: number | 'uncategorized' | null = null;
 
   constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService) { }
+
+  /** Categories with task count (matches kanban columns: uncategorized + each category). */
+  get categoryCounts(): CategoryCount[] {
+    const result: CategoryCount[] = [];
+    const uncategorized = this.appService.tasks.filter(
+      t => !t.categoryId || !this.appService.categoriesMap[t.categoryId]
+    );
+    if (uncategorized.length > 0 || this.appService.categories.length === 0) {
+      result.push({ id: 'uncategorized', title: 'Uncategorized', count: uncategorized.length });
+    }
+    this.appService.categories.forEach((cat: Category) => {
+      const count = this.appService.tasks.filter(t => t.categoryId === cat.id && !t.isPaused).length;
+      result.push({ id: cat.id, title: cat.title, count });
+    });
+    return result;
+  }
+
+  openCategoriesModal(): void {
+    this.showCategoriesModal = true;
+  }
+
+  closeCategoriesModal(): void {
+    this.showCategoriesModal = false;
+  }
+
+  onSelectCategory(id: number | 'uncategorized'): void {
+    this.closeCategoriesModal();
+    this.viewMode = 'board';
+    this.scrollToColumnId = id;
+    setTimeout(() => {
+      this.scrollToColumnId = null;
+    }, 500);
+  }
 
   ngOnInit(): void {
     this.appService.setCurrentPage(PAGES.TODOS);

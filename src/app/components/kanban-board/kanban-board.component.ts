@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChildren, QueryList, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppService } from '../../services/app.service';
 import { Task, Category } from '../../services/interfaces';
@@ -17,10 +17,32 @@ export interface KanbanColumn {
   templateUrl: './kanban-board.component.html',
   styleUrl: './kanban-board.component.scss'
 })
-export class KanbanBoardComponent {
+export class KanbanBoardComponent implements AfterViewChecked {
+  @Input() scrollToColumnId: number | 'uncategorized' | null = null;
   @Output() toggleComplete = new EventEmitter<number>();
 
+  @ViewChildren('columnRef') columnRefs?: QueryList<ElementRef<HTMLElement>>;
+
+  private lastScrollToId: number | 'uncategorized' | null = null;
+
   constructor(public appService: AppService) {}
+
+  ngAfterViewChecked(): void {
+    if (this.scrollToColumnId == null) {
+      this.lastScrollToId = null;
+      return;
+    }
+    if (this.scrollToColumnId === this.lastScrollToId || !this.columnRefs?.length) return;
+    const idx = this.columns.findIndex(c => c.id === this.scrollToColumnId);
+    if (idx === -1) return;
+    const el = this.columnRefs.get(idx)?.nativeElement;
+    if (el) {
+      this.lastScrollToId = this.scrollToColumnId;
+      setTimeout(() => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }, 0);
+    }
+  }
 
   /** Board columns: Uncategorized first, then one column per category. */
   get columns(): KanbanColumn[] {
