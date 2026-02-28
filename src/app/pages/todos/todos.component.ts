@@ -4,10 +4,13 @@ import { CommonModule } from '@angular/common';
 import { AppService } from '../../services/app.service';
 import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
-import { PAGES, TOAST_TYPE } from '../../services/interfaces';
+import { TOAST_TYPE } from '../../services/interfaces';
 import { Category } from '../../services/interfaces';
 import { CheckboxItemComponent } from '../../components/checkbox-item/checkbox-item.component';
 import { KanbanBoardComponent } from '../../components/kanban-board/kanban-board.component';
+import { ActivatedRoute } from '@angular/router';
+
+const TODOS_VIEW_STORAGE_KEY = 'habit-tracker-todos-view';
 
 export interface CategoryCount {
   id: number | 'uncategorized';
@@ -25,9 +28,12 @@ export interface CategoryCount {
 export class TodosComponent implements OnInit {
   viewMode: 'list' | 'board' = 'list';
   showCategoriesModal = false;
+  private readonly validViewModes: ('list' | 'board')[] = ['list', 'board'];
   scrollToColumnId: number | 'uncategorized' | null = null;
 
-  constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService) { }
+  constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService, private activatedRoute: ActivatedRoute) {
+    this.appService.setCurrentPage(this.activatedRoute.snapshot.data['page']);
+  }
 
   /** Categories with task count (matches kanban columns: uncategorized + each category). */
   get categoryCounts(): CategoryCount[] {
@@ -55,7 +61,7 @@ export class TodosComponent implements OnInit {
 
   onSelectCategory(id: number | 'uncategorized'): void {
     this.closeCategoriesModal();
-    this.viewMode = 'board';
+    this.setViewMode('board');
     this.scrollToColumnId = id;
     setTimeout(() => {
       this.scrollToColumnId = null;
@@ -63,10 +69,15 @@ export class TodosComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.appService.setCurrentPage(PAGES.TODOS);
+    const stored = localStorage.getItem(TODOS_VIEW_STORAGE_KEY);
+    if (stored && this.validViewModes.includes(stored as 'list' | 'board')) {
+      this.viewMode = stored as 'list' | 'board';
+    }
   }
-  ut_refreshTask() {
-    this.appService.fetchTasks();
+
+  setViewMode(mode: 'list' | 'board'): void {
+    this.viewMode = mode;
+    localStorage.setItem(TODOS_VIEW_STORAGE_KEY, mode);
   }
 
   /**

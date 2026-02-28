@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { TaskCreateComponent } from '../../components/task-create/task-create.component';
 import { TaskListComponent } from '../../components/task-list/task-list.component';
 import { AppService } from '../../services/app.service';
-import { PAGES } from '../../services/interfaces';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-task',
@@ -12,13 +12,10 @@ import { PAGES } from '../../services/interfaces';
   templateUrl: './task.component.html',
   styleUrl: './task.component.scss'
 })
-export class TaskComponent implements OnInit {
+export class TaskComponent {
 
-  constructor(public appService: AppService) { }
-
-  ngOnInit(): void {
-    this.appService.setCurrentPage(PAGES.CREATE);
+  constructor(public appService: AppService, private activatedRoute: ActivatedRoute) {
+    this.appService.setCurrentPage(this.activatedRoute.snapshot.data['page']);
   }
-
 
 }

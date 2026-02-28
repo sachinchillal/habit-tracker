@@ -121,8 +121,10 @@ export enum ACTIONS {
 }
 
 export enum PAGES {
-  CREATE,
-  TASKS,
+  HOME,
+  CREATE_HABIT,
   TODOS,
-  GROUPED_TODOS
+  GROUPED_TODOS,
+  HABIT_LIST,
+  HABIT_CATEGORY
 }

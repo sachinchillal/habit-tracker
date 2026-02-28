@@ -36,6 +36,7 @@ ng serve -o --host 0.0.0.0
 ng g c components/loader
 ng g c components/home
 ng g c components/toast
+ng g c components/header
 
 ng g c components/category
 ng g c components/category-list
@@ -48,10 +49,16 @@ ng g c components/task-list
 ng g c components/todos
 ng g c components/grouped-todos
 ng g c components/checkbox-item
+ng g c components/kanban-board
 
 ng g s services/theme
 
+# To run the development server
+cd github/habit-tracker
+npm run s
+
 # To deploy
+cd github/habit-tracker
 npm run b
 
 ```

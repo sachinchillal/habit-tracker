@@ -30,7 +30,7 @@ export class AppService {
 
   eventEmitter = new EventEmitter<AppEventEmitter>();
 
-  currentPage: PAGES = PAGES.TASKS;
+  currentPage: PAGES = PAGES.HOME;
 
   date: string = '';
   time: string = '';
@@ -60,18 +60,20 @@ export class AppService {
   // Public
   setCurrentPage(page: PAGES) {
     this.currentPage = page;
+    console.log(this.currentPage);
     switch (page) {
-      case PAGES.CREATE:
+      case PAGES.CREATE_HABIT:
         this.rearrangeTasksForPageCreate();
         break;
       case PAGES.TODOS:
         this.rearrangeTasksForPageTodos();
         break;
-      case PAGES.TASKS:
-        this.rearrangeTasksForPageList();
+      case PAGES.HABIT_LIST:
+        this.rearrangeTasksForPageHabitList();
         break;
 
       default:
+        console.warn('No page found for', page);
         break;
     }
   }
@@ -84,6 +86,33 @@ export class AppService {
       this.applySearchFilter();
       this.timeoutId = null;
     }, 300);
+  }
+  handleRefreshFromHeader() {
+    // fetchTrackers
+    switch (this.currentPage) {
+      case PAGES.HOME:
+        this.fetchTrackers();
+        break;
+      case PAGES.CREATE_HABIT:
+        this.fetchTasks();
+        break;
+      case PAGES.TODOS:
+        this.fetchTasks();
+        break;
+      case PAGES.GROUPED_TODOS:
+        this.fetchTasks();
+        break;
+      case PAGES.HABIT_LIST:
+        this.fetchTasks();
+        break;
+      case PAGES.HABIT_CATEGORY:
+        this.fetchCategories();
+        break;
+
+      default:
+        console.warn('No page found for', this.currentPage);
+        break;
+    }
   }
 
   private applySearchFilter() {
@@ -122,8 +151,7 @@ export class AppService {
       this.tasks.push(...this.tasksOriginal);
     }
   }
-
-  private rearrangeTasksForPageList() {
+  private rearrangeTasksForPageHabitList() {
     // show all tasks
     this.tasks.sort((a, b) => a.id - b.id);
 
@@ -357,7 +385,6 @@ export class AppService {
       if (tracker.daysList.length > 35) {
         tracker.daysList = tracker.daysList.slice(-35);
       }
-      console.log(tracker.daysList.length);
     }
   }
 

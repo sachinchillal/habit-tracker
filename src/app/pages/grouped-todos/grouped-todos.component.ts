@@ -4,8 +4,9 @@ import { CommonModule } from '@angular/common';
 import { AppService } from '../../services/app.service';
 import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
-import { Category, INIT_CATEGORY, PAGES, TOAST_TYPE } from '../../services/interfaces';
+import { Category, INIT_CATEGORY, TOAST_TYPE } from '../../services/interfaces';
 import { CheckboxItemComponent } from '../../components/checkbox-item/checkbox-item.component';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-grouped-todos',
@@ -17,7 +18,9 @@ import { CheckboxItemComponent } from '../../components/checkbox-item/checkbox-i
 export class GroupedTodosComponent implements OnInit {
   groupedTasks: Category[] = [];
 
-  constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService) { }
+  constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService, private activatedRoute: ActivatedRoute) {
+    this.appService.setCurrentPage(this.activatedRoute.snapshot.data['page']);
+  }
 
   ngOnInit(): void {
     this.buildGroupedTasks();
@@ -55,13 +58,6 @@ export class GroupedTodosComponent implements OnInit {
       uncategorized.title = 'Uncategorized';
       this.groupedTasks.unshift(uncategorized);
     }
-  }
-  ut_refreshTask() {
-    this.appService.fetchTasks();
-    // Rebuild grouped tasks after fetching
-    setTimeout(() => {
-      this.buildGroupedTasks();
-    }, 100);
   }
 
   /**

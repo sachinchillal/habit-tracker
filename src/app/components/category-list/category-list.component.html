@@ -3,8 +3,6 @@
     <h2 class="text-xl font-bold mb-4">Categories
       <span class="text-xs text-gray-500 ml-2">({{appService.categories.length}})</span>
     </h2>
-    <i class="ms-auto"></i>
-    <button type="button" class="primary-btn btn-sm" (click)="appService.fetchCategories()">Refresh</button>
   </div>
   <ul class="space-y-2">
     <li *ngFor="let c of appService.categories; let index=index; trackBy: trackCategoryById"

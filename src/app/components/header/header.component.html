@@ -1,0 +1,87 @@
+<header class="flex items-center gap-3 px-3 mb-2 md:px-0">
+  <!-- Desktop nav: visible from md up -->
+  <nav class="hidden md:flex flex-wrap items-center gap-1" aria-label="Main">
+    <a *ngFor="let nav of navLinks" [routerLink]="nav.path" routerLinkActive="active"
+      class="px-3 py-0.5 rounded text-blue-500 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-slate-900 flex items-center">
+      {{ nav.label }}
+    </a>
+  </nav>
+
+  <!-- Mobile: hamburger -->
+  <button type="button"
+    class="md:hidden p-2 -ml-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400 min-h-[2.75rem] min-w-[2.75rem] flex items-center justify-center"
+    (click)="toggleMobileMenu()" [attr.aria-expanded]="mobileMenuOpen" aria-label="Open menu">
+    <svg *ngIf="!mobileMenuOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+      stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+    <svg *ngIf="mobileMenuOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+      stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  </button>
+
+  <i class="ms-auto"></i>
+
+  <button type="button" class="secondary-btn btn-sm" (click)="appService.handleRefreshFromHeader()">Refresh</button>
+
+  <!-- Theme (gear) - top right on all breakpoints -->
+  <button type="button"
+    class="px-2 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-slate-900 transition-colors flex items-center justify-center shrink-0"
+    (click)="openThemeModal()" aria-label="Theme settings">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+      stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  </button>
+</header>
+
+<!-- Mobile nav overlay -->
+@if (mobileMenuOpen) {
+<div class="fixed inset-0 z-40 md:hidden" role="dialog" aria-modal="true" aria-label="Navigation menu">
+  <div class="absolute inset-0 bg-slate-900/50 dark:bg-slate-950/60 backdrop-blur-sm" (click)="closeMobileMenu()"></div>
+  <div
+    class="absolute top-0 left-0 right-0 mt-2 mx-3 rounded-xl bg-white dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+    <nav class="py-2" aria-label="Main">
+      <a *ngFor="let nav of navLinks" [routerLink]="nav.path" routerLinkActive="active" (click)="closeMobileMenu()"
+        class="block px-4 py-3 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 active:bg-slate-200 dark:active:bg-slate-600 min-h-[2.75rem] flex items-center">
+        {{ nav.label }}
+      </a>
+    </nav>
+  </div>
+</div>
+}
+
+@if (showThemeModal) {
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true"
+  aria-labelledby="theme-modal-title">
+  <div class="absolute inset-0 bg-slate-900/60 dark:bg-slate-950/70 backdrop-blur-sm" (click)="closeThemeModal()"></div>
+  <div
+    class="relative w-full max-w-sm flex flex-col rounded-xl bg-white dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700">
+    <div class="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+      <h2 id="theme-modal-title" class="text-lg font-semibold text-slate-800 dark:text-slate-200">Theme</h2>
+      <button type="button"
+        class="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors min-h-[2.75rem] min-w-[2.75rem] flex items-center justify-center"
+        (click)="closeThemeModal()" aria-label="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <div class="p-4 flex flex-wrap gap-2">
+      <button type="button" class="secondary-btn btn-sm"
+        [class.active]="themeService.currentThemeType === THEME_TYPE.AUTO"
+        (click)="themeService.changeTheme(THEME_TYPE.AUTO); closeThemeModal()">Auto</button>
+      <button type="button" class="secondary-btn btn-sm"
+        [class.active]="themeService.currentThemeType === THEME_TYPE.DARK"
+        (click)="themeService.changeTheme(THEME_TYPE.DARK); closeThemeModal()">Dark</button>
+      <button type="button" class="secondary-btn btn-sm"
+        [class.active]="themeService.currentThemeType === THEME_TYPE.LIGHT"
+        (click)="themeService.changeTheme(THEME_TYPE.LIGHT); closeThemeModal()">Light</button>
+    </div>
+  </div>
+</div>
+}

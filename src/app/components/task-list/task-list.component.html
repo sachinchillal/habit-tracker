@@ -3,8 +3,6 @@
     <h2 class="text-xl font-bold mb-4">Tasks
       <span class="text-xs text-gray-500 ml-2">({{appService.tasks.length}})</span>
     </h2>
-    <i class="ms-auto"></i>
-    <button type="button" class="primary-btn btn-sm" (click)="appService.fetchTasks()">Refresh</button>
   </div>
   <ul class="space-y-2 max-h-[70vh] overflow-y-auto scrollbar">
     <li *ngFor="let c of appService.tasks; let index=index; trackBy: trackCategoryById"

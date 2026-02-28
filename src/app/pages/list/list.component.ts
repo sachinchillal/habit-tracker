@@ -4,8 +4,9 @@ import { CommonModule } from '@angular/common';
 import { AppService } from '../../services/app.service';
 import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
-import { PAGES, TOAST_TYPE } from '../../services/interfaces';
-import { CheckboxItemComponent } from '../checkbox-item/checkbox-item.component';
+import { TOAST_TYPE } from '../../services/interfaces';
+import { CheckboxItemComponent } from '../../components/checkbox-item/checkbox-item.component';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-list',
@@ -16,14 +17,11 @@ import { CheckboxItemComponent } from '../checkbox-item/checkbox-item.component'
 })
 export class ListComponent implements OnInit {
 
-  constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService) { }
-
-  ngOnInit(): void {
-    this.appService.setCurrentPage(PAGES.TASKS);
+  constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService, private activatedRoute: ActivatedRoute) {
+    this.appService.setCurrentPage(this.activatedRoute.snapshot.data['page']);
   }
 
-  ut_refreshTask() {
-    this.appService.fetchTasks();
+  ngOnInit(): void {
   }
 
   /**
