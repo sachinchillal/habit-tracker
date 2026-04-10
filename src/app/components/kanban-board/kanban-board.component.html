@@ -3,11 +3,8 @@
     <div #columnRef class="kanban-column" *ngFor="let col of columns; trackBy: trackColumnById">
       <h3 class="kanban-column-header">{{ col.title }}</h3>
       <div class="kanban-column-content">
-        <app-checkbox-item
-          *ngFor="let task of col.tasks; let i = index; trackBy: trackTaskById"
-          [task]="task"
-          [index]="i"
-          (toggleComplete)="onToggleComplete($event)">
+        <app-checkbox-item *ngFor="let task of col.tasks; let i = index; trackBy: trackTaskById" [task]="task"
+          [index]="i" (toggleComplete)="onToggleComplete($event)">
         </app-checkbox-item>
         <p *ngIf="col.tasks.length === 0" class="kanban-empty">No tasks</p>
       </div>

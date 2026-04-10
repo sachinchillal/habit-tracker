@@ -20,6 +20,10 @@
   @apply text-sm px-3 py-1;
 }
 
+.secondary-btn.btn-xs {
+  @apply text-xs px-2 py-0.5;
+}
+
 .active {
   @apply bg-blue-500 text-white;
 }
@@ -58,6 +62,7 @@
 
   &::-webkit-scrollbar {
     width: 10px;
+    height: 10px;
   }
 
   &::-webkit-scrollbar-track {

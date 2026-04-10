@@ -11,6 +11,7 @@ export class AuthService {
 
   constructor() {
     this.initLocalID();
+    this.initUID();
   }
 
   private initLocalID() {
@@ -20,6 +21,12 @@ export class AuthService {
     } else {
       this.localId = (+new Date()).toString(36);
       localStorage.setItem("li", this.localId);
+    }
+  }
+  private initUID() {
+    const uid = localStorage.getItem("uid");
+    if (uid) {
+      this.uid = uid;
     }
   }
 }

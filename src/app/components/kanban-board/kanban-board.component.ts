@@ -25,7 +25,7 @@ export class KanbanBoardComponent implements AfterViewChecked {
 
   private lastScrollToId: number | 'uncategorized' | null = null;
 
-  constructor(public appService: AppService) {}
+  constructor(public appService: AppService) { }
 
   ngAfterViewChecked(): void {
     if (this.scrollToColumnId == null) {
@@ -50,12 +50,14 @@ export class KanbanBoardComponent implements AfterViewChecked {
     const uncategorized = this.appService.tasks.filter(
       t => !t.categoryId || !this.appService.categoriesMap[t.categoryId]
     );
-    if (uncategorized.length > 0 || this.appService.categories.length === 0) {
+    if (uncategorized.length > 0) {
       result.push({ id: 'uncategorized', title: 'Uncategorized', tasks: uncategorized });
     }
     this.appService.categories.forEach((cat: Category) => {
       const tasks = this.appService.tasks.filter(t => t.categoryId === cat.id && !t.isPaused);
-      result.push({ id: cat.id, title: cat.title, tasks });
+      if (tasks.length > 0) {
+        result.push({ id: cat.id, title: cat.title, tasks });
+      }
     });
     return result;
   }

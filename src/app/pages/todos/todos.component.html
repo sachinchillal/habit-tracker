@@ -1,6 +1,6 @@
-<div class="lg:px-8 lg:pt-4">
+<div class="lg:px-8 lg:pt-2">
   <!-- Header -->
-  <header class="flex flex-wrap items-center justify-between gap-4 mb-8">
+  <header class="flex flex-wrap items-center justify-between gap-4 mb-2">
     <div class="flex-grow">
       <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-200 tracking-tight inline mr-4">My ToDos
         <span
@@ -8,26 +8,27 @@
       </h1>
       <p class="text-slate-500 dark:text-slate-400 inline">A clean and simple way to manage your daily to-dos.</p>
     </div>
-    <!-- Categories modal trigger -->
-    <button type="button"
-      class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-      (click)="openCategoriesModal()" aria-label="View categories">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-        stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-      </svg>
-    </button>
-    <input type="search" class="border dark:border-slate-700 rounded-md p-2" placeholder="Search tasks..."
-      [(ngModel)]="appService.searchText" (ngModelChange)="appService.onSearch()" />
-    <button type="button" class="secondary-btn btn-sm" (click)="appService.searchText = '';">Clear</button>
-    <div class="flex items-center gap-2 flex-wrap">
-      <!-- add date and time picker -->
+    <div class="flex items-center flex-wrap">
+      <!-- date and time picker -->
       <input type="date" class="border dark:border-slate-700 rounded-md p-2" [(ngModel)]="appService.date" />
       <input type="time" class="border dark:border-slate-700 rounded-md p-2" [(ngModel)]="appService.time" />
-      <!-- add clear button -->
+      <!-- clear date and time -->
       <button type="button" class="secondary-btn btn-sm"
         (click)="appService.date = ''; appService.time = '';">Clear</button>
+      <!-- quick selection modal trigger -->
+      <button type="button" class="secondary-btn btn-sm" (click)="openQuickSelectionModal()"
+        aria-label="Quick select date and time">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l2.5 2.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </button>
+    </div>
+    <div class="flex items-center flex-wrap">
+      <input type="search" class="border dark:border-slate-700 rounded-md p-2" placeholder="Search tasks..."
+        [(ngModel)]="appService.searchText" (ngModelChange)="appService.onSearch()" />
+      <button type="button" class="secondary-btn btn-sm" title="Clear search"
+        (click)="appService.searchText = ''; appService.onSearch();">Clear</button>
     </div>
 
 
@@ -45,6 +46,16 @@
         Board
       </button>
     </div>
+    <!-- Categories modal trigger -->
+    <button type="button"
+      class="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+      (click)="openCategoriesModal()" aria-label="View categories">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+        stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+      </svg>
+    </button>
   </header>
 
   <!-- Categories modal -->
@@ -86,8 +97,53 @@
   </div>
   }
 
+  <!-- Quick selection modal -->
+  @if (showQuickSelectionModal) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true"
+    aria-labelledby="quick-selection-modal-title">
+    <div class="absolute inset-0 bg-slate-900/60 dark:bg-slate-950/70 backdrop-blur-sm"
+      (click)="closeQuickSelectionModal()"></div>
+    <div
+      class="relative w-full max-w-sm max-h-[85vh] flex flex-col rounded-xl bg-white dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700">
+      <div class="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+        <h2 id="quick-selection-modal-title" class="text-lg font-semibold text-slate-800 dark:text-slate-200">
+          Quick date & time
+        </h2>
+        <button type="button"
+          class="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          (click)="closeQuickSelectionModal()" aria-label="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="overflow-y-auto flex-1 p-2 min-h-0">
+        @for (item of quickSelections; track item.time) {
+        <button type="button"
+          class="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg text-left transition-colors hover:bg-slate-100 dark:hover:bg-slate-700/80 active:bg-slate-200 dark:active:bg-slate-600"
+          (click)="applyQuickSelection(item)">
+          <span class="font-medium text-slate-800 dark:text-slate-200 truncate">{{ item.label }}</span>
+        </button>
+        }
+        @if (quickSelections.length === 0) {
+        <p class="py-6 text-center text-slate-500 dark:text-slate-400 text-sm">No quick selections available.</p>
+        }
+      </div>
+    </div>
+  </div>
+  }
+
+  <section *ngIf="viewMode === 'board'" class="hidden md:block">
+    <div class="flex flex-wrap gap-1 mb-2">
+      @for(item of categoryCounts; track item.id) {
+      <button (click)="onSelectCategory(item.id)"
+        class="secondary-btn btn-xs {{item.count > 0?'':'opacity-50'}}">{{item.title}}</button>
+      }
+    </div>
+  </section>
   <div
-    class="max-h-[80vh] pb-[20vh] overflow-y-auto scrollbar scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700 scrollbar-track-slate-100 dark:scrollbar-track-slate-900">
+    class="max-h-[81vh] pb-[20vh] overflow-y-auto scrollbar scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700 scrollbar-track-slate-100 dark:scrollbar-track-slate-900">
     <!-- List view: Task grid -->
     <ng-container *ngIf="viewMode === 'list'">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
@@ -103,7 +159,7 @@
     </ng-container>
 
     <!-- Board view: Kanban -->
-    <section #kanbanSection *ngIf="viewMode === 'board'" class="mt-4" aria-label="Kanban board" id="kanban-section">
+    <section #kanbanSection *ngIf="viewMode === 'board'" aria-label="Kanban board" id="kanban-section">
       <app-kanban-board [scrollToColumnId]="scrollToColumnId"
         (toggleComplete)="handleToggleComplete($event)"></app-kanban-board>
       <div *ngIf="appService.tasks.length === 0"

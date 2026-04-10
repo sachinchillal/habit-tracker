@@ -18,6 +18,12 @@ export interface CategoryCount {
   count: number;
 }
 
+interface QuickSelection {
+  label: string;
+  date: string;
+  time: string;
+}
+
 @Component({
   selector: 'app-todos',
   standalone: true,
@@ -28,8 +34,10 @@ export interface CategoryCount {
 export class TodosComponent implements OnInit {
   viewMode: 'list' | 'board' = 'list';
   showCategoriesModal = false;
+  showQuickSelectionModal = false;
   private readonly validViewModes: ('list' | 'board')[] = ['list', 'board'];
   scrollToColumnId: number | 'uncategorized' | null = null;
+  quickSelections: QuickSelection[] = [];
 
   constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService, private activatedRoute: ActivatedRoute) {
     this.appService.setCurrentPage(this.activatedRoute.snapshot.data['page']);
@@ -66,6 +74,37 @@ export class TodosComponent implements OnInit {
     setTimeout(() => {
       this.scrollToColumnId = null;
     }, 500);
+  }
+
+  openQuickSelectionModal(): void {
+    const now = new Date();
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+
+    const year = yesterday.getFullYear();
+    const month = String(yesterday.getMonth() + 1).padStart(2, '0');
+    const day = String(yesterday.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+
+    const times = ['05:00', '07:00', '09:00', '12:00', '15:00', '18:00', '21:00', '23:00'];
+
+    this.quickSelections = times.map(time => ({
+      label: `${dateStr} @ ${time}`,
+      date: dateStr,
+      time
+    }));
+
+    this.showQuickSelectionModal = true;
+  }
+
+  closeQuickSelectionModal(): void {
+    this.showQuickSelectionModal = false;
+  }
+
+  applyQuickSelection(selection: QuickSelection): void {
+    this.appService.date = selection.date;
+    this.appService.time = selection.time;
+    this.closeQuickSelectionModal();
   }
 
   ngOnInit(): void {

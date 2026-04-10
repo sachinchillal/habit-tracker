@@ -25,7 +25,8 @@
     <!-- Task Title -->
     <div class="flex items-center gap-3">
       <span class="text-lg font-medium transition-all duration-300 ease-in-out truncate"
-        [ngClass]="task.isDone ? 'text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200'">
+        [ngClass]="task.isDone ? 'text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200'"
+        title="{{ task.title }}">
         {{ task.title }}
       </span>
 
@@ -37,7 +38,8 @@
     </div>
 
     <!-- Task Description (if available) -->
-    <p *ngIf="task.description && task.description.trim()" class="text-sm text-slate-500 dark:text-slate-400 truncate">
+    <p *ngIf="task.description && task.description.trim()" class="text-sm text-slate-500 dark:text-slate-400 truncate"
+      title="{{ task.description }}">
       {{ task.description }}
     </p>
     <p *ngIf="task.lastUpdated" class="text-xs opacity-60 truncate" [ngClass]="task.lastUpdatedColor">
