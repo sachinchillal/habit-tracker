@@ -25,6 +25,7 @@ export interface Task extends DateProps {
   isActive: boolean;
   // UI properties
   categoryId?: number; // Optional category ID
+  categoryName?: string; // Optional category Name
   lastUpdatedAt: number;
   lastUpdated: string;
   lastUpdatedColor: string;
@@ -128,3 +129,9 @@ export enum PAGES {
   HABIT_LIST,
   HABIT_CATEGORY
 }
+
+export enum BORDER_ITEMS {
+  LEVEL_1_BORDER = 'Level 1 Border',
+  LEVEL_2_BORDER = 'Level 2 Border',
+}
+export type BorderItem = { label: BORDER_ITEMS; checked: boolean };

@@ -50,8 +50,10 @@ ng g c components/todos
 ng g c components/grouped-todos
 ng g c components/checkbox-item
 ng g c components/kanban-board
+ng g c components/settings
 
 ng g s services/theme
+ng g s services/settings
 
 # To run the development server
 cd github/habit-tracker

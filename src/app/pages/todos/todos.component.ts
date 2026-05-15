@@ -46,9 +46,7 @@ export class TodosComponent implements OnInit {
   /** Categories with task count (matches kanban columns: uncategorized + each category). */
   get categoryCounts(): CategoryCount[] {
     const result: CategoryCount[] = [];
-    const uncategorized = this.appService.tasks.filter(
-      t => !t.categoryId || !this.appService.categoriesMap[t.categoryId]
-    );
+    const uncategorized = this.appService.tasks.filter(t => !t.categoryId || !t.categoryName);
     if (uncategorized.length > 0 || this.appService.categories.length === 0) {
       result.push({ id: 'uncategorized', title: 'Uncategorized', count: uncategorized.length });
     }

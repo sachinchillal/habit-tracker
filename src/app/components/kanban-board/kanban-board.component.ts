@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter, ViewChildren, QueryList, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppService } from '../../services/app.service';
-import { Task, Category } from '../../services/interfaces';
+import { Task, Category, BORDER_ITEMS } from '../../services/interfaces';
 import { CheckboxItemComponent } from '../checkbox-item/checkbox-item.component';
+import { SettingsService } from '../../services/settings.service';
 
 export interface KanbanColumn {
-  id: number | 'uncategorized';
+  id: number | 'uncategorized' | 'recent';
   title: string;
   tasks: Task[];
 }
@@ -24,8 +25,21 @@ export class KanbanBoardComponent implements AfterViewChecked {
   @ViewChildren('columnRef') columnRefs?: QueryList<ElementRef<HTMLElement>>;
 
   private lastScrollToId: number | 'uncategorized' | null = null;
+  isVisibleLevel1Border = true;
+  isVisibleLevel2Border = true;
 
-  constructor(public appService: AppService) { }
+  constructor(public appService: AppService, private settingsService: SettingsService) {
+    this.settingsService.borderItems$.subscribe(items => {
+      // this.isVisibleLevel1Border = items.find(item => item.label === BORDER_ITEMS.LEVEL_1_BORDER)?.checked ?? false;
+      items.forEach(i => {
+        if (i.label == BORDER_ITEMS.LEVEL_1_BORDER) {
+          this.isVisibleLevel1Border = i.checked;
+        } else if (i.label == BORDER_ITEMS.LEVEL_2_BORDER) {
+          this.isVisibleLevel2Border = i.checked;
+        }
+      })
+    });
+  }
 
   ngAfterViewChecked(): void {
     if (this.scrollToColumnId == null) {
@@ -47,9 +61,14 @@ export class KanbanBoardComponent implements AfterViewChecked {
   /** Board columns: Uncategorized first, then one column per category. */
   get columns(): KanbanColumn[] {
     const result: KanbanColumn[] = [];
-    const uncategorized = this.appService.tasks.filter(
-      t => !t.categoryId || !this.appService.categoriesMap[t.categoryId]
-    );
+
+    const Used48hoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
+    const recentTasks = this.appService.tasks.filter(t => t.lastUpdatedAt && new Date(t.lastUpdatedAt) > Used48hoursAgo);
+    if (recentTasks.length > 0) {
+      result.push({ id: 'recent', title: 'Recent', tasks: recentTasks });
+    }
+
+    const uncategorized = this.appService.tasks.filter(t => !t.categoryId || !t.categoryName);
     if (uncategorized.length > 0) {
       result.push({ id: 'uncategorized', title: 'Uncategorized', tasks: uncategorized });
     }

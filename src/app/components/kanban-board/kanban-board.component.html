@@ -1,10 +1,11 @@
 <div class="kanban-board">
-  <div class="kanban-columns">
-    <div #columnRef class="kanban-column" *ngFor="let col of columns; trackBy: trackColumnById">
+  <div class="kanban-columns" [ngClass]="{'gap-2!':!isVisibleLevel1Border}">
+    <div #columnRef class="kanban-column" [ngClass]="{'border-0!':!isVisibleLevel1Border}"
+      *ngFor="let col of columns; trackBy: trackColumnById">
       <h3 class="kanban-column-header">{{ col.title }}</h3>
-      <div class="kanban-column-content">
+      <div class="kanban-column-content" [ngClass]="{'gap-0!':!isVisibleLevel2Border}">
         <app-checkbox-item *ngFor="let task of col.tasks; let i = index; trackBy: trackTaskById" [task]="task"
-          [index]="i" (toggleComplete)="onToggleComplete($event)">
+          [index]="i" [isVisibleBorder]="isVisibleLevel2Border" (toggleComplete)="onToggleComplete($event)">
         </app-checkbox-item>
         <p *ngIf="col.tasks.length === 0" class="kanban-empty">No tasks</p>
       </div>

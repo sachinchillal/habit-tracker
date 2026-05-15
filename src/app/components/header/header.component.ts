@@ -1,19 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { ThemeService } from '../../services/theme.service';
-import { THEME_TYPE as TT } from '../../services/interfaces';
 import { AppService } from '../../services/app.service';
+import { SettingsComponent } from '../settings/settings.component';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, SettingsComponent],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
 export class HeaderComponent {
-  showThemeModal = false;
+  showSettingsModal = false;
   mobileMenuOpen = false;
   /** Labels aligned with app.routes.ts title for each route */
   readonly navLinks = [
@@ -24,16 +23,15 @@ export class HeaderComponent {
     { path: '/list', label: 'Habit List' },
     { path: '/category', label: 'Habit Category' },
   ];
-  readonly THEME_TYPE = TT;
 
-  constructor(public themeService: ThemeService, public appService: AppService) { }
+  constructor(public appService: AppService) { }
 
-  openThemeModal(): void {
-    this.showThemeModal = true;
+  openSettingsModal(): void {
+    this.showSettingsModal = true;
   }
 
-  closeThemeModal(): void {
-    this.showThemeModal = false;
+  closeSettingsModal(): void {
+    this.showSettingsModal = false;
   }
 
   toggleMobileMenu(): void {

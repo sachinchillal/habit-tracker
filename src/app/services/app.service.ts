@@ -60,7 +60,6 @@ export class AppService {
   // Public
   setCurrentPage(page: PAGES) {
     this.currentPage = page;
-    console.log(this.currentPage);
     switch (page) {
       case PAGES.CREATE_HABIT:
         this.rearrangeTasksForPageCreate();
@@ -117,7 +116,6 @@ export class AppService {
 
   private applySearchFilter() {
     // Implement search logic here
-    console.log('Searching for:', this.searchText);
     this.tasks.length = 0;
     if (this.searchText.trim() === '') {
       this.tasks.push(...this.tasksOriginal);
@@ -194,7 +192,13 @@ export class AppService {
     this.isLoading = true;
     this.apiService.getTasks().subscribe({
       next: (tasks: any) => {
-        this.saveTasks(tasks.data);
+        const _tasks = tasks.data;
+        _tasks.forEach((task: Task) => {
+          if (task.categoryId) {
+            task.categoryName = this.categoriesMap[task.categoryId]?.title;
+          }
+        });
+        this.saveTasks(_tasks);
         this.isLoading = false;
       },
       error: () => {
@@ -276,7 +280,7 @@ export class AppService {
         } else {
           const differenceInDays = Math.floor((today.getTime() - lastCreatedAt.getTime()) / (1000 * 60 * 60 * 24));
           const differenceInHours = Math.floor((today.getTime() - lastCreatedAt.getTime()) / (1000 * 60 * 60));
-          if (differenceInDays === 0) {
+          if (differenceInDays < 2) {
             if (differenceInHours === 0) {
               task.lastUpdated = 'a few moments ago';
               task.lastUpdatedColor = 'text-green-500 dark:text-green-400';

@@ -51,7 +51,6 @@ export class GroupedTodosComponent implements OnInit {
         uncategorized.tasks.push(task);
       }
     });
-    console.log(categoriesMap)
 
     this.groupedTasks = Object.values(categoriesMap);
     if (uncategorized.tasks.length > 0) {
