@@ -132,14 +132,11 @@ export class TodosComponent implements OnInit {
    * @param {number} id - The ID of the task to toggle.
    */
   handleToggleComplete(id: number) {
-    console.log('handleToggleComplete', id);
-    console.log('appService.tasks', this.appService.date, this.appService.time);
     this.appService.isLoading = true;
     let timestamp = 0;
     if (this.appService.date && this.appService.time) {
       timestamp = new Date(this.appService.date + " " + this.appService.time).getTime();
     }
-    console.log('timestamp', timestamp);
     const apiCall = timestamp > 0 ? this.apiService.markTaskCompletedByTimestamp(id, timestamp) : this.apiService.markTaskCompleted(id);
     // return;
     apiCall.subscribe({

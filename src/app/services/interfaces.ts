@@ -15,36 +15,111 @@ export const INIT_DAY_INFO: DayInfo = {
   updatedAt: +new Date()
 }
 
-export interface Task extends DateProps {
-  id: number;
+/** Sunday-first display order; values match API / JS `Date.getDay()` (0–6). */
+export const WEEK_DAY_OPTIONS = [
+  { value: 0, label: 'Sunday', shortLabel: 'Su' },
+  { value: 1, label: 'Monday', shortLabel: 'Mo' },
+  { value: 2, label: 'Tuesday', shortLabel: 'Tu' },
+  { value: 3, label: 'Wednesday', shortLabel: 'We' },
+  { value: 4, label: 'Thursday', shortLabel: 'Th' },
+  { value: 5, label: 'Friday', shortLabel: 'Fr' },
+  { value: 6, label: 'Saturday', shortLabel: 'Sa' },
+] as const;
+
+export type WeekDay = (typeof WEEK_DAY_OPTIONS)[number]['value'];
+export type WeekDayOption = (typeof WEEK_DAY_OPTIONS)[number];
+
+export type WeekDayPreset = 'weekdays' | 'weekends' | 'alternate' | 'monWedFri';
+
+const WEEK_DAY_PRESET_FILTERS: Record<WeekDayPreset, (day: WeekDay) => boolean> = {
+  weekdays: (day) => day >= 1 && day <= 5,
+  weekends: (day) => day === 0 || day === 6,
+  alternate: (day) => day % 2 === 0,
+  monWedFri: (day) => day === 1 || day === 3 || day === 5,
+};
+
+export function weekDaysForPreset(preset: WeekDayPreset): WeekDay[] {
+  return WEEK_DAY_OPTIONS.filter((opt) => WEEK_DAY_PRESET_FILTERS[preset](opt.value)).map(
+    (opt) => opt.value,
+  );
+}
+
+export function isAllWeekDaysSelected(weekDays?: WeekDay[]): boolean {
+  if (!weekDays?.length || weekDays.length !== WEEK_DAY_OPTIONS.length) {
+    return false;
+  }
+  return WEEK_DAY_OPTIONS.every((opt) => weekDays.includes(opt.value));
+}
+
+/** Omit from API when none or all days are selected (every day). */
+export function shouldOmitWeekDaysFromApi(weekDays?: WeekDay[]): boolean {
+  return !weekDays?.length || isAllWeekDaysSelected(weekDays);
+}
+
+export function formatSelectedWeekDays(weekDays?: WeekDay[]): string {
+  if (!weekDays?.length || isAllWeekDaysSelected(weekDays)) {
+    return 'Every day';
+  }
+  return WEEK_DAY_OPTIONS.filter((opt) => weekDays.includes(opt.value))
+    .map((opt) => opt.label)
+    .join(', ');
+}
+
+export function isTaskScheduledForWeekDay(
+  weekDays: WeekDay[] | undefined,
+  day: WeekDay,
+): boolean {
+  return !!weekDays?.length
+    && !isAllWeekDaysSelected(weekDays)
+    && weekDays.includes(day);
+}
+
+export interface TaskCreate {
+  id?: number;
+
   title: string;
   description: string;
-  date: string;
-  time: string;
-  isDone: boolean;
+  categoryId?: number; // Optional category ID
+  weekDays?: WeekDay[];
+}
+export const INIT_TASK_CREATE: TaskCreate = {
+  id: undefined,
+  title: '',
+  description: '',
+  categoryId: undefined,
+  weekDays: [],
+};
+export interface Task extends TaskCreate, DateProps {
+  id: number;
+
   isActive: boolean;
   // UI properties
-  categoryId?: number; // Optional category ID
   categoryName?: string; // Optional category Name
+
+  isDone: boolean;
+  isPaused: boolean;
+
   lastUpdatedAt: number;
   lastUpdated: string;
   lastUpdatedColor: string;
-  isPaused: boolean;
 }
 export const INIT_TASK: Task = {
   id: 0,
+
   title: '',
   description: '',
-  date: '',
-  time: '',
-  isDone: false,
+  categoryId: undefined,
+
   isActive: false,
   createdAt: +new Date(),
   updatedAt: +new Date(),
+
+  isDone: false,
+  isPaused: false,
+
   lastUpdatedAt: 0,
   lastUpdated: '',
   lastUpdatedColor: 'text-slate-red dark:text-red-400',
-  isPaused: false
 }
 export interface Category extends Task {
   tasks: Task[];

@@ -43,7 +43,6 @@ export class GroupedTodosComponent implements OnInit {
             categoriesMap[categoryId] = { ...this.appService.categoriesMap[categoryId] };
             categoriesMap[categoryId].tasks = [task];
           } else {
-            console.log('Category not found for ID:', categoryId);
             uncategorized.tasks.push(task);
           }
         }

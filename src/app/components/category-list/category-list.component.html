@@ -1,13 +1,17 @@
-<div class="p-4">
+<div>
   <div class="flex items-center mb-4">
-    <h2 class="text-xl font-bold mb-4">Categories
+    <h2 class="text-xl font-bold">Categories
       <span class="text-xs text-gray-500 ml-2">({{appService.categories.length}})</span>
     </h2>
   </div>
   <ul class="space-y-2">
     <li *ngFor="let c of appService.categories; let index=index; trackBy: trackCategoryById"
       class="relative rounded shadow p-2 border border-gray-200 dark:border-gray-700">
-      <div class="mb-2">{{c.title}}</div>
+      <div class="mb-1 font-medium text-slate-800 dark:text-slate-100">{{ c.title }}</div>
+      <p *ngIf="c.description?.trim()" class="mb-2 text-sm text-slate-500 dark:text-slate-400 line-clamp-2"
+        [title]="c.description">
+        {{ c.description }}
+      </p>
       <div class="flex gap-2 items-center">
         <div class="text-xs text-gray-500">{{c.id | date:'medium'}}</div>
         <i class="ms-auto"></i>

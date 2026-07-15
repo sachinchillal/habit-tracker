@@ -1,12 +1,12 @@
 import { Component, Input, Output, EventEmitter, ViewChildren, QueryList, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppService } from '../../services/app.service';
-import { Task, Category, BORDER_ITEMS } from '../../services/interfaces';
+import { Task, Category, BORDER_ITEMS, WeekDay, WEEK_DAY_OPTIONS, isTaskScheduledForWeekDay } from '../../services/interfaces';
 import { CheckboxItemComponent } from '../checkbox-item/checkbox-item.component';
 import { SettingsService } from '../../services/settings.service';
 
 export interface KanbanColumn {
-  id: number | 'uncategorized' | 'recent';
+  id: number | 'uncategorized' | 'recent' | 'today';
   title: string;
   tasks: Task[];
 }
@@ -61,6 +61,15 @@ export class KanbanBoardComponent implements AfterViewChecked {
   /** Board columns: Uncategorized first, then one column per category. */
   get columns(): KanbanColumn[] {
     const result: KanbanColumn[] = [];
+
+    const today = new Date().getDay() as WeekDay;
+    const todayLabel = WEEK_DAY_OPTIONS.find(o => o.value === today)?.label ?? 'Today';
+    const todayTasks = this.appService.tasks.filter(t =>
+      isTaskScheduledForWeekDay(t.weekDays, today)
+    );
+    if (todayTasks.length > 0) {
+      result.push({ id: 'today', title: todayLabel, tasks: todayTasks });
+    }
 
     const Used48hoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
     const recentTasks = this.appService.tasks.filter(t => t.lastUpdatedAt && new Date(t.lastUpdatedAt) > Used48hoursAgo);

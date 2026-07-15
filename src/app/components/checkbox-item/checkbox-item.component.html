@@ -6,7 +6,7 @@
   <button (click)="onToggleComplete()"
     class="flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out mr-4 group-hover:scale-110"
     [ngClass]="task.isDone ? 'bg-gradient-to-r from-green-500 to-green-600 border-green-500 shadow-lg' : 'border-slate-300 bg-white dark:bg-slate-800 hover:border-green-500 hover:shadow-md'"
-    [attr.aria-label]="task.isDone ? 'Mark task as incomplete' : 'Mark task as complete'">
+    [attr.aria-label]="task.isDone ? 'Marked as completed' : 'Mark task as complete'">
     <!-- Check icon shown conditionally with *ngIf -->
     <svg *ngIf="task.isDone" class="w-4 h-4 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
       fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -45,16 +45,6 @@
     <p *ngIf="task.lastUpdated" class="text-xs opacity-60 truncate" [ngClass]="task.lastUpdatedColor">
       {{ task.lastUpdated }}</p>
 
-    <!-- Task Date/Time (if available) -->
-    <div *ngIf="task.date || task.time" class="flex items-center gap-2 mt-2">
-      <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-      </svg>
-      <span class="text-xs text-slate-500 dark:text-slate-400">
-        {{ task.date }} {{ task.time ? 'at ' + task.time : '' }}
-      </span>
-    </div>
   </div>
 
   <!-- Task Number -->

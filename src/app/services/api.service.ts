@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
-import { Task } from './interfaces';
+import { TaskCreate, Task } from './interfaces';
 
 const API = environment.API_URL;
 
@@ -13,10 +13,19 @@ export class ApiService {
 
   // App API Requests
   categoryCreate(category: Task) {
-    return this.httpClient.post(API + 'habitTracker/category', category);
+    const body = {
+      title: category.title,
+      description: category.description,
+    }
+    return this.httpClient.post(API + 'habitTracker/category', body);
   }
   categoryUpdate(category: Task) {
-    return this.httpClient.put(API + 'habitTracker/category', category);
+    const body = {
+      id: category.id,
+      title: category.title,
+      description: category.description,
+    }
+    return this.httpClient.put(API + 'habitTracker/category', body);
   }
   categoryDelete(id: number) {
     return this.httpClient.delete(API + 'habitTracker/category/' + id);
@@ -25,11 +34,32 @@ export class ApiService {
     return this.httpClient.get(API + 'habitTracker/category');
   }
 
-  taskCreate(task: Task) {
-    return this.httpClient.post(API + 'habitTracker/task', task);
+  taskCreate(task: TaskCreate) {
+    const body: any = {
+      title: task.title,
+      description: task.description
+    }
+    if (task.categoryId) {
+      body.categoryId = task.categoryId;
+    }
+    if (task.weekDays) {
+      body.weekDays = task.weekDays;
+    }
+    return this.httpClient.post(API + 'habitTracker/task', body);
   }
-  taskUpdate(task: Task) {
-    return this.httpClient.put(API + 'habitTracker/task', task);
+  taskUpdate(task: TaskCreate) {
+    const body: any = {
+      id: task.id,
+      title: task.title,
+      description: task.description
+    }
+    if (task.categoryId) {
+      body.categoryId = task.categoryId;
+    }
+    if (task.weekDays) {
+      body.weekDays = task.weekDays;
+    }
+    return this.httpClient.put(API + 'habitTracker/task', body);
   }
   taskDelete(id: number) {
     return this.httpClient.delete(API + 'habitTracker/task/' + id);

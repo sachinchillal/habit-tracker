@@ -275,29 +275,26 @@ export class AppService {
           lastCreatedAt.getFullYear() === today.getFullYear();
         task.isDone = isToday && lastStatus.isDone;
 
-        if (task.isDone) {
-          task.lastUpdated = '';
-        } else {
-          const differenceInDays = Math.floor((today.getTime() - lastCreatedAt.getTime()) / (1000 * 60 * 60 * 24));
-          const differenceInHours = Math.floor((today.getTime() - lastCreatedAt.getTime()) / (1000 * 60 * 60));
-          if (differenceInDays < 2) {
-            if (differenceInHours === 0) {
-              task.lastUpdated = 'a few moments ago';
-              task.lastUpdatedColor = 'text-green-500 dark:text-green-400';
-            } else {
-              task.lastUpdated = `${differenceInHours} hours ago`;
-              task.lastUpdatedColor = 'text-green-200 dark:text-green-100';
-            }
+        const differenceInDays = Math.floor((today.getTime() - lastCreatedAt.getTime()) / (1000 * 60 * 60 * 24));
+        const differenceInHours = Math.floor((today.getTime() - lastCreatedAt.getTime()) / (1000 * 60 * 60));
+        if (differenceInDays < 2) {
+          if (differenceInHours === 0) {
+            task.lastUpdated = 'a few moments ago';
+            task.lastUpdatedColor = 'text-green-500 dark:text-green-400';
           } else {
-            if (differenceInDays === 1) {
-              task.lastUpdated = 'Yesterday';
-              task.lastUpdatedColor = 'text-green-600 dark:text-green-500';
-            } else {
-              task.lastUpdated = `${differenceInDays} days ago`;
-              task.lastUpdatedColor = 'text-red-500 dark:text-red-400';
-            }
+            task.lastUpdated = `${differenceInHours} hours ago`;
+            task.lastUpdatedColor = 'text-green-200 dark:text-green-100';
+          }
+        } else {
+          if (differenceInDays === 1) {
+            task.lastUpdated = 'Yesterday';
+            task.lastUpdatedColor = 'text-green-600 dark:text-green-500';
+          } else {
+            task.lastUpdated = `${differenceInDays} days ago`;
+            task.lastUpdatedColor = 'text-red-500 dark:text-red-400';
           }
         }
+
         task.lastUpdatedAt = lastStatus.createdAt;
         task.isPaused = t.paused;
       }

@@ -11,6 +11,58 @@
       <option value="undefined" selected>Select Category</option>
       <option *ngFor="let category of appService.categories" [value]="category.id">{{ category.title }}</option>
     </select>
+
+    <fieldset class="flex flex-col gap-2 border-0 p-0 m-0 min-w-0">
+      <legend class="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+        Repeat on
+      </legend>
+
+      <div class="flex flex-wrap gap-1.5" role="group" aria-label="Days of the week">
+        <button
+          *ngFor="let option of weekDayOptions"
+          type="button"
+          (click)="toggleWeekDay(option.value)"
+          [attr.aria-pressed]="isWeekDaySelected(option.value)"
+          [attr.aria-label]="option.label"
+          [title]="option.label"
+          class="inline-flex items-center justify-center min-w-[2.75rem] h-10 px-2 rounded-full text-sm font-semibold border-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
+          [ngClass]="isWeekDaySelected(option.value)
+            ? 'bg-blue-500 border-blue-500 text-white hover:bg-blue-600'
+            : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400'">
+          {{ option.shortLabel }}
+        </button>
+      </div>
+
+      <p class="text-xs text-gray-500 dark:text-gray-400" aria-live="polite">
+        {{ selectedDaysSummary }}
+      </p>
+
+      <div class="flex flex-wrap gap-2">
+        <button type="button" (click)="selectAllDays()"
+          class="text-xs font-medium px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+          Every day
+        </button>
+        <button type="button" (click)="applyWeekDayPreset('weekdays')"
+          class="text-xs font-medium px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+          Weekdays
+        </button>
+        <button type="button" (click)="applyWeekDayPreset('weekends')"
+          class="text-xs font-medium px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+          Weekends
+        </button>
+        <button type="button" (click)="applyWeekDayPreset('alternate')"
+          class="text-xs font-medium px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          title="Sunday, Tuesday, Thursday, Saturday">
+          Alternate days
+        </button>
+        <button type="button" (click)="applyWeekDayPreset('monWedFri')"
+          class="text-xs font-medium px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          title="Monday, Wednesday, Friday">
+          Mon Wed Fri
+        </button>
+      </div>
+    </fieldset>
+
     <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50" type="submit"
       [disabled]="!task.title.trim()">
       {{ task.id ? 'Update Task' : 'Create Task' }}
