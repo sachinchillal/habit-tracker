@@ -1,0 +1,40 @@
+<div class="flex flex-col h-full">
+  <div class="flex items-center mb-4 shrink-0">
+    <h2 class="text-xl font-bold">Subcategories
+      <span class="text-xs text-gray-500 ml-2">({{subcategories.length}})</span>
+    </h2>
+  </div>
+  <ul class="space-y-2 overflow-y-auto scrollbar flex-1 min-h-0">
+    <li *ngFor="let s of subcategories; let index=index; trackBy: trackSubcategoryById"
+      class="relative rounded shadow p-2 border border-gray-200 dark:border-gray-700"
+      [style.margin-left.rem]="(appService.getCategoryDepth(s) - 1) * 0.75">
+      <div class="flex items-start justify-between gap-2 mb-1">
+        <div class="font-medium text-slate-800 dark:text-slate-100">{{ s.title }}</div>
+        <span *ngIf="appService.getCategoryParentPath(s) as parentPath"
+          class="shrink-0 max-w-[55%] truncate text-[11px] font-medium px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+          [title]="parentPath">
+          {{ parentPath }}
+        </span>
+      </div>
+      <p *ngIf="s.description?.trim()" class="mb-2 text-sm text-slate-500 dark:text-slate-400 line-clamp-2"
+        [title]="s.description">
+        {{ s.description }}
+      </p>
+      <div class="flex gap-2 items-center">
+        <div class="text-xs text-gray-500">{{s.id | date:'medium'}}</div>
+        <i class="ms-auto"></i>
+        <button title="Delete Subcategory" aria-label="Delete Subcategory" (click)="handleDelete(s)"
+          class="p-1 hover:bg-red-900 rounded">
+          &#128465;
+        </button>
+        <button title="Edit Subcategory" aria-label="Edit Subcategory" (click)="handleEdit(s)"
+          class="p-1 hover:bg-blue-900 rounded">
+          &#9999;
+        </button>
+      </div>
+    </li>
+    <li *ngIf="!subcategories.length" class="text-sm text-gray-500 dark:text-gray-400 italic p-2">
+      No subcategories yet. Select a category and create one to get started.
+    </li>
+  </ul>
+</div>

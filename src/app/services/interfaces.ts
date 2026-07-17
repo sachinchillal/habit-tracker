@@ -129,6 +129,27 @@ export const INIT_CATEGORY: Category = {
   tasks: []
 }
 
+export interface SubcategoryCreate {
+  id?: number;
+
+  title: string;
+  description: string;
+  categoryId?: number; // Required for subcategories, set via the category dropdown
+}
+export const INIT_SUBCATEGORY_CREATE: SubcategoryCreate = {
+  id: undefined,
+  title: '',
+  description: '',
+  categoryId: undefined,
+};
+export interface Subcategory extends SubcategoryCreate, DateProps {
+  id: number;
+  categoryId: number;
+
+  // UI property
+  categoryName?: string;
+}
+
 export interface HT_Status extends DateProps {
   day: number;
   isDone: boolean;
@@ -193,16 +214,19 @@ export enum THEME_TYPE {
 
 export enum ACTIONS {
   EDIT_CATEGORY = "EDIT_CATEGORY",
-  EDIT_TASK = "EDIT_TASK"
+  EDIT_TASK = "EDIT_TASK",
+  EDIT_SUBCATEGORY = "EDIT_SUBCATEGORY"
 }
 
 export enum PAGES {
   HOME,
   CREATE_HABIT,
   TODOS,
+  HABIT_TREE,
   GROUPED_TODOS,
   HABIT_LIST,
-  HABIT_CATEGORY
+  HABIT_CATEGORY,
+  SUBCATEGORIES
 }
 
 export enum BORDER_ITEMS {

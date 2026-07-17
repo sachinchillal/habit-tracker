@@ -1,0 +1,52 @@
+:host {
+  display: block;
+}
+
+/* Active nav states — plain CSS so Tailwind v4 does not need @apply here */
+.header-nav-active {
+  color: #2563eb;
+  background-color: #eff6ff;
+  font-weight: 600;
+}
+
+:host-context(.dark) .header-nav-active {
+  color: #60a5fa;
+  background-color: rgba(23, 37, 84, 0.4);
+}
+
+.header-more-active {
+  color: #2563eb;
+  background-color: #eff6ff;
+  font-weight: 500;
+}
+
+:host-context(.dark) .header-more-active {
+  color: #60a5fa;
+  background-color: rgba(23, 37, 84, 0.4);
+}
+
+.header-drawer-active {
+  color: #2563eb;
+  background-color: #eff6ff;
+  font-weight: 600;
+}
+
+:host-context(.dark) .header-drawer-active {
+  color: #60a5fa;
+  background-color: rgba(23, 37, 84, 0.4);
+}
+
+.header-drawer {
+  width: min(20rem, 85vw);
+  animation: header-drawer-in 0.2s ease-out;
+}
+
+@keyframes header-drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}

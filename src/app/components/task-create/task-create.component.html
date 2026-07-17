@@ -9,7 +9,9 @@
     <select [(ngModel)]="task.categoryId" name="categoryId" placeholder="Select Category"
       class="border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white">
       <option value="undefined" selected>Select Category</option>
-      <option *ngFor="let category of appService.categories" [value]="category.id">{{ category.title }}</option>
+      <option *ngFor="let category of appService.categories" [value]="category.id">
+        {{ appService.getCategoryPath(category) }}
+      </option>
     </select>
 
     <fieldset class="flex flex-col gap-2 border-0 p-0 m-0 min-w-0">

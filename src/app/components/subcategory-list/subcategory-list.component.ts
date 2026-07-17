@@ -6,31 +6,35 @@ import { ToastService } from '../../services/toast.service';
 import { ACTIONS, Category } from '../../services/interfaces';
 
 @Component({
-  selector: 'app-category-list',
+  selector: 'app-subcategory-list',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './category-list.component.html',
-  styleUrl: './category-list.component.scss'
+  templateUrl: './subcategory-list.component.html',
+  styleUrl: './subcategory-list.component.scss'
 })
-export class CategoryListComponent {
+export class SubcategoryListComponent {
 
   constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService) { }
+
+  get subcategories(): Category[] {
+    return this.appService.categories.filter(c => !!c.categoryId);
+  }
 
   /**
    * trackBy function for ngFor to improve performance.
    * @param index - The index of the item.
-   * @param category - The category object.
-   * @returns The unique ID of the category.
+   * @param subcategory - The subcategory object.
+   * @returns The unique ID of the subcategory.
    */
-  trackCategoryById(index: number, category: any) {
-    return category.id;
+  trackSubcategoryById(index: number, subcategory: any) {
+    return subcategory.id;
   }
-  handleDelete(category: Category) {
+  handleDelete(subcategory: Category) {
     this.appService.isLoading = true;
-    this.apiService.categoryDelete(category.id).subscribe({
+    this.apiService.categoryDelete(subcategory.id).subscribe({
       next: (response) => {
         this.appService.isLoading = false;
-        this.toastService.showToastAuto('Success', 'Category deleted successfully.', 'success');
+        this.toastService.showToastAuto('Success', 'Subcategory deleted successfully.', 'success');
         this.appService.fetchCategories();
       },
       error: (error) => {
@@ -43,11 +47,7 @@ export class CategoryListComponent {
       },
     });
   }
-  handleEdit(category: Category) {
-    if (category.categoryId) {
-      this.appService.eventEmitter.emit({ action: ACTIONS.EDIT_SUBCATEGORY, data: category });
-    } else {
-      this.appService.eventEmitter.emit({ action: ACTIONS.EDIT_CATEGORY, data: category });
-    }
+  handleEdit(subcategory: Category) {
+    this.appService.eventEmitter.emit({ action: ACTIONS.EDIT_SUBCATEGORY, data: subcategory });
   }
 }

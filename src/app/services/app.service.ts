@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { ACTIONS, Category, HT_Status, HT_Tracker, INIT_DAY_INFO, PAGES, Task } from './interfaces';
+import { ACTIONS, Category, HT_Status, HT_Tracker, INIT_DAY_INFO, PAGES, Subcategory, Task } from './interfaces';
 import { ApiService } from './api.service';
 
 const LOCAL_STORAGE_KEY = 'habit_tracker';
@@ -10,7 +10,7 @@ interface LocalStorageData {
 }
 interface AppEventEmitter {
   action: ACTIONS,
-  data: Task | Category
+  data: Task | Category | Subcategory
 }
 
 @Injectable({
@@ -70,6 +70,8 @@ export class AppService {
       case PAGES.HABIT_LIST:
         this.rearrangeTasksForPageHabitList();
         break;
+      case PAGES.SUBCATEGORIES:
+        break;
 
       default:
         console.warn('No page found for', page);
@@ -105,6 +107,9 @@ export class AppService {
         this.fetchTasks();
         break;
       case PAGES.HABIT_CATEGORY:
+        this.fetchCategories();
+        break;
+      case PAGES.SUBCATEGORIES:
         this.fetchCategories();
         break;
 
@@ -172,7 +177,6 @@ export class AppService {
   }
 
   public saveCategories(categories: Category[]): void {
-    categories.sort((a, b) => a.title.localeCompare(b.title));
     this.assignCategories(categories);
     const d = this.getLocalStorage();
     d.categories = this.categories;
@@ -180,12 +184,112 @@ export class AppService {
   }
   private assignCategories(categories: Category[]): void {
     this.categories.length = 0; // Clear existing categories
-    this.categories.push(...categories);
     this.categoriesMap = {}; // Reset the category map
-    this.categories.forEach(c => {
-      // Initialize the task map for quick access
+    categories.forEach(c => {
       this.categoriesMap[c.id] = c;
     });
+    // Resolve parent labels for nested categories
+    categories.forEach(c => {
+      if (c.categoryId) {
+        c.categoryName = this.categoriesMap[c.categoryId]?.title;
+      } else {
+        c.categoryName = undefined;
+      }
+    });
+    // Depth-first tree order so parents appear above their children
+    this.categories.push(...this.orderCategoriesAsTree(categories));
+  }
+
+  /** Full ancestry path including the category itself, e.g. "Sports › Running › Tempo". */
+  getCategoryPath(category: Category | number): string {
+    const start = typeof category === 'number' ? this.categoriesMap[category] : category;
+    if (!start) {
+      return '';
+    }
+    const parts: string[] = [];
+    let current: Category | undefined = start;
+    const visited = new Set<number>();
+    while (current && !visited.has(current.id)) {
+      visited.add(current.id);
+      parts.unshift(current.title);
+      current = current.categoryId ? this.categoriesMap[current.categoryId] : undefined;
+    }
+    return parts.join(' > ');
+  }
+
+  /** Path of ancestors only (parent → … → root), for badges. */
+  getCategoryParentPath(category: Category): string {
+    if (!category.categoryId) {
+      return '';
+    }
+    const parent = this.categoriesMap[category.categoryId];
+    return parent ? this.getCategoryPath(parent) : '';
+  }
+
+  getCategoryDepth(category: Category): number {
+    let depth = 0;
+    let current: Category | undefined = category;
+    const visited = new Set<number>();
+    while (current?.categoryId && !visited.has(current.id)) {
+      visited.add(current.id);
+      depth++;
+      current = this.categoriesMap[current.categoryId];
+    }
+    return depth;
+  }
+
+  /**
+   * Categories that can be chosen as a parent.
+   * Excludes `excludeId` and all of its descendants to avoid cycles when editing.
+   */
+  getValidParentOptions(excludeId?: number): Category[] {
+    const excluded = new Set<number>();
+    if (excludeId != null) {
+      excluded.add(excludeId);
+      let changed = true;
+      while (changed) {
+        changed = false;
+        for (const c of this.categories) {
+          if (c.categoryId && excluded.has(c.categoryId) && !excluded.has(c.id)) {
+            excluded.add(c.id);
+            changed = true;
+          }
+        }
+      }
+    }
+    return this.orderCategoriesAsTree(this.categories.filter(c => !excluded.has(c.id)));
+  }
+
+  private orderCategoriesAsTree(categories: Category[]): Category[] {
+    const byParent = new Map<number | null, Category[]>();
+    for (const c of categories) {
+      const key = c.categoryId ?? null;
+      const group = byParent.get(key) ?? [];
+      group.push(c);
+      byParent.set(key, group);
+    }
+    for (const group of byParent.values()) {
+      group.sort((a, b) => a.title.localeCompare(b.title));
+    }
+    const result: Category[] = [];
+    const visit = (parentId: number | null) => {
+      const children = byParent.get(parentId) ?? [];
+      for (const child of children) {
+        result.push(child);
+        visit(child.id);
+      }
+    };
+    visit(null);
+    // Orphans whose parent is missing from the list
+    if (result.length < categories.length) {
+      const seen = new Set(result.map(c => c.id));
+      for (const c of categories) {
+        if (!seen.has(c.id)) {
+          result.push(c);
+        }
+      }
+    }
+    return result;
   }
   // TASKS
   public fetchTasks() {

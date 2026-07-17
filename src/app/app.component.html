@@ -1,6 +1,8 @@
-<div class="m-2">
-  <app-header />
-  <router-outlet />
+<div class="h-screen flex flex-col">
+  <app-header class="shrink-0" />
+  <div class="flex-1 min-h-0 overflow-y-auto flex flex-col p-2">
+    <router-outlet />
+  </div>
 </div>
 <app-loader *ngIf="appService.isLoading"></app-loader>
 <app-toast></app-toast>
