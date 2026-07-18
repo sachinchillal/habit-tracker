@@ -23,11 +23,16 @@
       <div class="flex gap-2 items-center">
         <div class="text-xs text-gray-500">{{c.id | date:'medium'}}</div>
         <i class="ms-auto"></i>
-        <button title="Delete Note" aria-label="Delete Note" (click)="handleDelete(c)"
+        <button title="Add child category" aria-label="Add child category" (click)="handleAddChild(c)"
+          class="p-1 px-2 hover:bg-emerald-900 rounded text-sm font-medium text-emerald-700 dark:text-emerald-300">
+          +
+        </button>
+        <button title="Delete category" aria-label="Delete category" (click)="handleDelete(c)"
           class="p-1 hover:bg-red-900 rounded">
           &#128465;
         </button>
-        <button title="Edit Note" aria-label="Edit Note" (click)="handleEdit(c)" class="p-1 hover:bg-blue-900 rounded">
+        <button title="Edit category" aria-label="Edit category" (click)="handleEdit(c)"
+          class="p-1 hover:bg-blue-900 rounded">
           &#9999;
         </button>
       </div>

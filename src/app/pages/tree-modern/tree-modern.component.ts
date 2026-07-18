@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { CheckboxItemComponent } from '../../components/checkbox-item/checkbox-item.component';
 import { ApiService } from '../../services/api.service';
 import { AppService } from '../../services/app.service';
-import { Category, PAGES, TOAST_TYPE, Task } from '../../services/interfaces';
+import { PAGES, TOAST_TYPE, Task, Category } from '../../services/interfaces';
 import { ToastService } from '../../services/toast.service';
 
 interface TreeNodeVm {
@@ -86,16 +86,16 @@ export class TreeModernComponent implements OnInit {
       return [];
     }
     return this.appService.categories
-      .filter((category) => category.categoryId === selectedId)
+      .filter((category) => category.parentId === selectedId)
       .sort((a, b) => a.title.localeCompare(b.title));
   }
 
   get totalRootCategories(): number {
-    return this.appService.categories.filter((category) => !category.categoryId).length;
+    return this.appService.categories.filter((category) => !category.parentId).length;
   }
 
   get totalNestedCategories(): number {
-    return this.appService.categories.filter((category) => !!category.categoryId).length;
+    return this.appService.categories.filter((category) => !!category.parentId).length;
   }
 
   get totalActiveHabits(): number {
@@ -221,7 +221,7 @@ export class TreeModernComponent implements OnInit {
 
     const byParent = new Map<number | null, Category[]>();
     categories.forEach((category) => {
-      const key = category.categoryId ?? null;
+      const key = category.parentId ?? null;
       const list = byParent.get(key) ?? [];
       list.push(category);
       byParent.set(key, list);
@@ -282,7 +282,7 @@ export class TreeModernComponent implements OnInit {
   private expandRootNodes(): void {
     this.expandedNodeIds.clear();
     this.appService.categories
-      .filter((category) => !category.categoryId)
+      .filter((category) => !category.parentId)
       .forEach((category) => this.expandedNodeIds.add(category.id));
   }
 
@@ -292,7 +292,7 @@ export class TreeModernComponent implements OnInit {
     while (current && !visited.has(current.id)) {
       visited.add(current.id);
       this.expandedNodeIds.add(current.id);
-      current = current.categoryId ? this.appService.categoriesMap[current.categoryId] : undefined;
+      current = current.parentId ? this.appService.categoriesMap[current.parentId] : undefined;
     }
   }
 

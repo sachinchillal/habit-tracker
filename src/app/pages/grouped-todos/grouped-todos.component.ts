@@ -4,9 +4,15 @@ import { CommonModule } from '@angular/common';
 import { AppService } from '../../services/app.service';
 import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
-import { Category, INIT_CATEGORY, TOAST_TYPE } from '../../services/interfaces';
+import { Task, TOAST_TYPE } from '../../services/interfaces';
 import { CheckboxItemComponent } from '../../components/checkbox-item/checkbox-item.component';
 import { ActivatedRoute } from '@angular/router';
+
+interface GroupedCategoryVm {
+  id: number;
+  title: string;
+  tasks: Task[];
+}
 
 @Component({
   selector: 'app-grouped-todos',
@@ -16,7 +22,7 @@ import { ActivatedRoute } from '@angular/router';
   styleUrl: './grouped-todos.component.scss'
 })
 export class GroupedTodosComponent implements OnInit {
-  groupedTasks: Category[] = [];
+  groupedTasks: GroupedCategoryVm[] = [];
 
   constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService, private activatedRoute: ActivatedRoute) {
     this.appService.setCurrentPage(this.activatedRoute.snapshot.data['page']);
@@ -26,22 +32,17 @@ export class GroupedTodosComponent implements OnInit {
     this.buildGroupedTasks();
   }
   private buildGroupedTasks() {
-    const uncategorized: Category = { ...INIT_CATEGORY };
-    uncategorized.tasks = [];
-    const categoriesMap: { [key: number]: Category } = {};
+    const uncategorized: GroupedCategoryVm = { id: 0, title: 'Uncategorized', tasks: [] };
+    const categoriesMap: { [key: number]: GroupedCategoryVm } = {};
     this.appService.tasks.forEach(task => {
       const categoryId = task.categoryId;
       if (categoryId) {
         if (categoriesMap[categoryId]) {
-          if (categoriesMap[categoryId].tasks) {
-            categoriesMap[categoryId].tasks.push(task);
-          } else {
-            categoriesMap[categoryId].tasks = [task];
-          }
+          categoriesMap[categoryId].tasks.push(task);
         } else {
-          if (this.appService.categoriesMap[categoryId]) {
-            categoriesMap[categoryId] = { ...this.appService.categoriesMap[categoryId] };
-            categoriesMap[categoryId].tasks = [task];
+          const category = this.appService.categoriesMap[categoryId];
+          if (category) {
+            categoriesMap[categoryId] = { id: category.id, title: category.title, tasks: [task] };
           } else {
             uncategorized.tasks.push(task);
           }
@@ -53,7 +54,6 @@ export class GroupedTodosComponent implements OnInit {
 
     this.groupedTasks = Object.values(categoriesMap);
     if (uncategorized.tasks.length > 0) {
-      uncategorized.title = 'Uncategorized';
       this.groupedTasks.unshift(uncategorized);
     }
   }
@@ -64,7 +64,7 @@ export class GroupedTodosComponent implements OnInit {
    * @param task - The task object.
    * @returns The unique ID of the task.
    */
-  trackTaskById(index: number, task: any) {
+  trackTaskById(index: number, task: Task) {
     return task.id;
   }
 
@@ -98,7 +98,7 @@ export class GroupedTodosComponent implements OnInit {
    * @param tasks - Array of tasks
    * @returns Number of completed tasks
    */
-  getCompletedCount(tasks: any[]): number {
+  getCompletedCount(tasks: Task[]): number {
     return tasks.filter(task => task.isDone).length;
   }
 
@@ -107,7 +107,7 @@ export class GroupedTodosComponent implements OnInit {
    * @param tasks - Array of tasks
    * @returns Completion percentage (0-100)
    */
-  getCompletionPercentage(tasks: any[]): number {
+  getCompletionPercentage(tasks: Task[]): number {
     if (tasks.length === 0) return 0;
     const completed = this.getCompletedCount(tasks);
     return Math.round((completed / tasks.length) * 100);
@@ -118,7 +118,7 @@ export class GroupedTodosComponent implements OnInit {
    * @param tasks - Array of tasks
    * @returns Dash array string for SVG
    */
-  getProgressDashArray(tasks: any[]): string {
+  getProgressDashArray(tasks: Task[]): string {
     const circumference = 2 * Math.PI * 15.9155; // radius = 15.9155
     return `${circumference} ${circumference}`;
   }
@@ -128,7 +128,7 @@ export class GroupedTodosComponent implements OnInit {
    * @param tasks - Array of tasks
    * @returns Dash offset for SVG
    */
-  getProgressDashOffset(tasks: any[]): string {
+  getProgressDashOffset(tasks: Task[]): string {
     const circumference = 2 * Math.PI * 15.9155; // radius = 15.9155
     const percentage = this.getCompletionPercentage(tasks);
     return `${circumference - (percentage / 100) * circumference}`;

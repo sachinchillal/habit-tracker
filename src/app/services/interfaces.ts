@@ -2,6 +2,36 @@ export interface DateProps {
   createdAt: number;
   updatedAt: number;
 }
+export interface BaseProps extends DateProps {
+  id: number;
+  title: string;
+  description: string;
+
+  isActive: boolean;
+}
+
+export interface ApiTask extends BaseProps {
+  isPaused: boolean;
+}
+export interface ApiCategory extends BaseProps {
+  parentId?: number;
+}
+export interface Category extends ApiCategory {
+}
+export const INIT_UI_CATEGORY: Category = {
+  id: 0,
+  title: '',
+  description: '',
+  isActive: false,
+  createdAt: +new Date(),
+  updatedAt: +new Date(),
+  parentId: undefined
+};
+
+export interface ApiMarksObject {
+  [key: number]: number[]
+}
+
 export interface DayInfo extends DateProps {
   id: number;
   color: string;
@@ -121,35 +151,6 @@ export const INIT_TASK: Task = {
   lastUpdated: '',
   lastUpdatedColor: 'text-slate-red dark:text-red-400',
 }
-export interface Category extends Task {
-  tasks: Task[];
-}
-export const INIT_CATEGORY: Category = {
-  ...INIT_TASK,
-  tasks: []
-}
-
-export interface SubcategoryCreate {
-  id?: number;
-
-  title: string;
-  description: string;
-  categoryId?: number; // Required for subcategories, set via the category dropdown
-}
-export const INIT_SUBCATEGORY_CREATE: SubcategoryCreate = {
-  id: undefined,
-  title: '',
-  description: '',
-  categoryId: undefined,
-};
-export interface Subcategory extends SubcategoryCreate, DateProps {
-  id: number;
-  categoryId: number;
-
-  // UI property
-  categoryName?: string;
-}
-
 export interface HT_Status extends DateProps {
   day: number;
   isDone: boolean;
@@ -215,7 +216,6 @@ export enum THEME_TYPE {
 export enum ACTIONS {
   EDIT_CATEGORY = "EDIT_CATEGORY",
   EDIT_TASK = "EDIT_TASK",
-  EDIT_SUBCATEGORY = "EDIT_SUBCATEGORY"
 }
 
 export enum PAGES {
@@ -226,7 +226,6 @@ export enum PAGES {
   GROUPED_TODOS,
   HABIT_LIST,
   HABIT_CATEGORY,
-  SUBCATEGORIES
 }
 
 export enum BORDER_ITEMS {

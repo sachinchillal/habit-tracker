@@ -38,8 +38,7 @@ export class HeaderComponent {
   readonly moreLinks: NavLink[] = [
     { path: '/list', label: 'Habit List' },
     { path: '/grouped-todos', label: 'Grouped ToDos' },
-    { path: '/category', label: 'Habit Category' },
-    { path: '/subcategories', label: 'Subcategories' },
+    { path: '/category', label: 'Categories' },
   ];
 
   private readonly destroyRef = inject(DestroyRef);

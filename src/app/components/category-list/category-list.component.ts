@@ -25,10 +25,11 @@ export class CategoryListComponent {
   trackCategoryById(index: number, category: any) {
     return category.id;
   }
+
   handleDelete(category: Category) {
     this.appService.isLoading = true;
     this.apiService.categoryDelete(category.id).subscribe({
-      next: (response) => {
+      next: () => {
         this.appService.isLoading = false;
         this.toastService.showToastAuto('Success', 'Category deleted successfully.', 'success');
         this.appService.fetchCategories();
@@ -43,11 +44,15 @@ export class CategoryListComponent {
       },
     });
   }
+
   handleEdit(category: Category) {
-    if (category.categoryId) {
-      this.appService.eventEmitter.emit({ action: ACTIONS.EDIT_SUBCATEGORY, data: category });
-    } else {
-      this.appService.eventEmitter.emit({ action: ACTIONS.EDIT_CATEGORY, data: category });
-    }
+    this.appService.eventEmitter.emit({ action: ACTIONS.EDIT_CATEGORY, data: category });
+  }
+
+  handleAddChild(category: Category) {
+    this.appService.eventEmitter.emit({
+      action: ACTIONS.EDIT_CATEGORY,
+      data: { parentId: category.id },
+    });
   }
 }

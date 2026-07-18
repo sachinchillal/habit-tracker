@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
-import { TaskCreate, Task, SubcategoryCreate } from './interfaces';
+import { TaskCreate, Category } from './interfaces';
 
 const API = environment.API_URL + 'habitTracker/';
 
@@ -12,19 +12,23 @@ export class ApiService {
   constructor(private httpClient: HttpClient) { }
 
   // App API Requests
-  categoryCreate(category: Task) {
-    const body = {
+  categoryCreate(category: Category) {
+    const body: Record<string, unknown> = {
       title: category.title,
       description: category.description,
+    };
+    if (category.parentId) {
+      body['parentId'] = category.parentId;
     }
     return this.httpClient.post(API + 'category', body);
   }
-  categoryUpdate(category: Task) {
+  categoryUpdate(category: Category) {
     const body = {
       id: category.id,
       title: category.title,
       description: category.description,
-    }
+      parentId: category.parentId ?? null,
+    };
     return this.httpClient.put(API + 'category', body);
   }
   categoryDelete(id: number) {
@@ -32,24 +36,6 @@ export class ApiService {
   }
   getCategories() {
     return this.httpClient.get(API + 'category');
-  }
-
-  subCategoryCreate(subcategory: SubcategoryCreate) {
-    const body = {
-      title: subcategory.title,
-      description: subcategory.description,
-      categoryId: subcategory.categoryId,
-    }
-    return this.httpClient.post(API + 'category', body);
-  }
-  subCategoryUpdate(subcategory: SubcategoryCreate) {
-    const body = {
-      id: subcategory.id,
-      title: subcategory.title,
-      description: subcategory.description,
-      categoryId: subcategory.categoryId,
-    }
-    return this.httpClient.put(API + 'category', body);
   }
 
   taskCreate(task: TaskCreate) {
@@ -65,6 +51,9 @@ export class ApiService {
     }
     return this.httpClient.post(API + 'task', body);
   }
+  getTasks() {
+    return this.httpClient.get(API + 'task');
+  }
   taskUpdate(task: TaskCreate) {
     const body: any = {
       id: task.id,
@@ -79,26 +68,23 @@ export class ApiService {
     }
     return this.httpClient.put(API + 'task', body);
   }
+  pauseTask(id: number) {
+    return this.httpClient.put(API + 'task/pause/' + id, {});
+  }
+  resumeTask(id: number) {
+    return this.httpClient.put(API + 'task/resume/' + id, {});
+  }
   taskDelete(id: number) {
     return this.httpClient.delete(API + 'task/' + id);
   }
-  getTasks() {
-    return this.httpClient.get(API + 'task');
-  }
 
   markTaskCompleted(id: number) {
-    return this.httpClient.get(API + 'check/' + id);
+    return this.httpClient.get(API + 'task/' + id + '/mark');
   }
   markTaskCompletedByTimestamp(id: number, timestamp: number) {
-    return this.httpClient.get(API + 'check/' + id + "/" + timestamp);
+    return this.httpClient.get(API + 'task/' + id + '/mark/' + timestamp);
   }
-  getTrackers() {
-    return this.httpClient.get(API + 'trackers');
-  }
-  pauseTask(id: number) {
-    return this.httpClient.put(API + 'pause/' + id, {});
-  }
-  resumeTask(id: number) {
-    return this.httpClient.put(API + 'resume/' + id, {});
+  getMarks() {
+    return this.httpClient.get(API + 'marks');
   }
 }

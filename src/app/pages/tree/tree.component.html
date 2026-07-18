@@ -61,7 +61,7 @@
         <button type="button" class="category-card" (click)="toggleNode(node)">
           <div class="category-copy">
             <strong>{{ node.category.title }}</strong>
-            <p *ngIf="node.category.categoryId">{{ categoryPath(node.category) }}</p>
+            <p *ngIf="node.category.parentId">{{ categoryPath(node.category) }}</p>
           </div>
 
           <div class="category-badges">

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AppService } from '../../services/app.service';
-import { Category, PAGES, TOAST_TYPE, Task } from '../../services/interfaces';
+import { PAGES, TOAST_TYPE, Task, Category } from '../../services/interfaces';
 import { ToastService } from '../../services/toast.service';
 
 interface TreeNodeVm {
@@ -58,7 +58,7 @@ export class TreeComponent implements OnInit {
   }
 
   get rootCategoryCount(): number {
-    return this.appService.categories.filter((category) => !category.categoryId).length;
+    return this.appService.categories.filter((category) => !category.parentId).length;
   }
 
   trackNodeById(index: number, node: TreeNodeVm): number {
@@ -152,7 +152,7 @@ export class TreeComponent implements OnInit {
 
     const byParent = new Map<number | null, Category[]>();
     this.appService.categories.forEach((category) => {
-      const key = category.categoryId ?? null;
+      const key = category.parentId ?? null;
       const list = byParent.get(key) ?? [];
       list.push(category);
       byParent.set(key, list);
@@ -206,7 +206,7 @@ export class TreeComponent implements OnInit {
 
   private expandRootCategories(): void {
     this.appService.categories
-      .filter((category) => !category.categoryId)
+      .filter((category) => !category.parentId)
       .forEach((category) => this.expandedNodeIds.add(category.id));
   }
 

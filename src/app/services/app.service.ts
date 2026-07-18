@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { ACTIONS, Category, HT_Status, HT_Tracker, INIT_DAY_INFO, PAGES, Subcategory, Task } from './interfaces';
+import { ACTIONS, HT_Status, HT_Tracker, INIT_DAY_INFO, PAGES, Task, Category } from './interfaces';
 import { ApiService } from './api.service';
 
 const LOCAL_STORAGE_KEY = 'habit_tracker';
@@ -10,7 +10,7 @@ interface LocalStorageData {
 }
 interface AppEventEmitter {
   action: ACTIONS,
-  data: Task | Category | Subcategory
+  data: Task | Category | Partial<Category>
 }
 
 @Injectable({
@@ -70,8 +70,6 @@ export class AppService {
       case PAGES.HABIT_LIST:
         this.rearrangeTasksForPageHabitList();
         break;
-      case PAGES.SUBCATEGORIES:
-        break;
 
       default:
         console.warn('No page found for', page);
@@ -107,9 +105,6 @@ export class AppService {
         this.fetchTasks();
         break;
       case PAGES.HABIT_CATEGORY:
-        this.fetchCategories();
-        break;
-      case PAGES.SUBCATEGORIES:
         this.fetchCategories();
         break;
 
@@ -188,14 +183,6 @@ export class AppService {
     categories.forEach(c => {
       this.categoriesMap[c.id] = c;
     });
-    // Resolve parent labels for nested categories
-    categories.forEach(c => {
-      if (c.categoryId) {
-        c.categoryName = this.categoriesMap[c.categoryId]?.title;
-      } else {
-        c.categoryName = undefined;
-      }
-    });
     // Depth-first tree order so parents appear above their children
     this.categories.push(...this.orderCategoriesAsTree(categories));
   }
@@ -212,17 +199,17 @@ export class AppService {
     while (current && !visited.has(current.id)) {
       visited.add(current.id);
       parts.unshift(current.title);
-      current = current.categoryId ? this.categoriesMap[current.categoryId] : undefined;
+      current = current.parentId ? this.categoriesMap[current.parentId] : undefined;
     }
     return parts.join(' > ');
   }
 
   /** Path of ancestors only (parent → … → root), for badges. */
   getCategoryParentPath(category: Category): string {
-    if (!category.categoryId) {
+    if (!category.parentId) {
       return '';
     }
-    const parent = this.categoriesMap[category.categoryId];
+    const parent = this.categoriesMap[category.parentId];
     return parent ? this.getCategoryPath(parent) : '';
   }
 
@@ -230,10 +217,10 @@ export class AppService {
     let depth = 0;
     let current: Category | undefined = category;
     const visited = new Set<number>();
-    while (current?.categoryId && !visited.has(current.id)) {
+    while (current?.parentId && !visited.has(current.id)) {
       visited.add(current.id);
       depth++;
-      current = this.categoriesMap[current.categoryId];
+      current = this.categoriesMap[current.parentId];
     }
     return depth;
   }
@@ -250,7 +237,7 @@ export class AppService {
       while (changed) {
         changed = false;
         for (const c of this.categories) {
-          if (c.categoryId && excluded.has(c.categoryId) && !excluded.has(c.id)) {
+          if (c.parentId && excluded.has(c.parentId) && !excluded.has(c.id)) {
             excluded.add(c.id);
             changed = true;
           }
@@ -263,7 +250,7 @@ export class AppService {
   private orderCategoriesAsTree(categories: Category[]): Category[] {
     const byParent = new Map<number | null, Category[]>();
     for (const c of categories) {
-      const key = c.categoryId ?? null;
+      const key = c.parentId ?? null;
       const group = byParent.get(key) ?? [];
       group.push(c);
       byParent.set(key, group);
@@ -332,7 +319,7 @@ export class AppService {
   //  TRACKERS
   public fetchTrackers() {
     this.isLoading = true;
-    this.apiService.getTrackers().subscribe({
+    this.apiService.getMarks().subscribe({
       next: (res: any) => {
         this.saveTrackers(Object.values(res.data));
         this.setCurrentPage(this.currentPage); // to rearrange tasks if on todos page
