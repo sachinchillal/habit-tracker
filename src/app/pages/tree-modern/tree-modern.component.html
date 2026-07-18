@@ -1,0 +1,206 @@
+<div class="tree-page">
+  <header class="hero-card">
+    <div class="hero-copy">
+      <span class="eyebrow">Habit architecture</span>
+      <h1>Habit Tree</h1>
+      <p>
+        Explore nested categories, understand branch size, and inspect the habits attached to every level of your
+        structure.
+      </p>
+    </div>
+
+    <div class="hero-stats">
+      <article class="stat-card">
+        <span class="stat-label">Primary categories</span>
+        <strong class="stat-value">{{ totalRootCategories }}</strong>
+      </article>
+      <article class="stat-card">
+        <span class="stat-label">Nested categories</span>
+        <strong class="stat-value">{{ totalNestedCategories }}</strong>
+      </article>
+      <article class="stat-card">
+        <span class="stat-label">Active habits</span>
+        <strong class="stat-value">{{ totalActiveHabits }}</strong>
+      </article>
+      <article class="stat-card">
+        <span class="stat-label">Selected depth</span>
+        <strong class="stat-value">{{ selectedBranchDepth || '—' }}</strong>
+      </article>
+    </div>
+  </header>
+
+  <section *ngIf="appService.categories.length; else emptyTree" class="tree-shell">
+    <aside class="navigator-panel">
+      <div class="panel-head">
+        <div>
+          <h2>Category navigator</h2>
+          <p>Browse the hierarchy and select a branch to inspect its habits.</p>
+        </div>
+      </div>
+
+      <label class="search-field" for="treeSearch">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0a7 7 0 0114 0Z" fill="none" stroke="currentColor"
+            stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+        </svg>
+        <input id="treeSearch" type="text" [(ngModel)]="searchText"
+          placeholder="Search by title, path, or description" />
+        <button *ngIf="hasSearch()" type="button" class="clear-btn" (click)="clearSearch()" aria-label="Clear search">
+          Clear
+        </button>
+      </label>
+
+      <div class="tree-list" *ngIf="visibleRootNodes.length; else noSearchResults">
+        <ng-container *ngTemplateOutlet="treeNodes; context: { $implicit: visibleRootNodes }"></ng-container>
+      </div>
+    </aside>
+
+    <section class="details-panel" *ngIf="selectedNode as node; else noSelection">
+      <div class="details-hero">
+        <div class="details-badge">Selected category</div>
+        <h2>{{ node.category.title }}</h2>
+        <p>{{ selectedCategoryPath }}</p>
+
+        <div class="details-meta">
+          <div class="metric-chip">
+            <span class="metric-value">{{ node.childCategoryCount }}</span>
+            <span class="metric-label">direct children</span>
+          </div>
+          <div class="metric-chip">
+            <span class="metric-value">{{ node.descendantCategoryCount }}</span>
+            <span class="metric-label">nested categories</span>
+          </div>
+          <div class="metric-chip">
+            <span class="metric-value">{{ node.directHabitCount }}</span>
+            <span class="metric-label">direct habits</span>
+          </div>
+          <div class="metric-chip">
+            <span class="metric-value">{{ node.totalHabitCount }}</span>
+            <span class="metric-label">branch habits</span>
+          </div>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress-copy">
+            <span class="progress-label">Branch completion</span>
+            <strong>{{ getProgressPercent(node) }}%</strong>
+          </div>
+          <div class="progress-track">
+            <div class="progress-bar" [style.width.%]="getProgressPercent(node)"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="details-grid">
+        <article class="detail-card" *ngIf="node.category.description?.trim()">
+          <h3>About this category</h3>
+          <p>{{ node.category.description }}</p>
+        </article>
+
+        <article class="detail-card">
+          <h3>Parent path</h3>
+          <p>{{ getParentPath(node) || 'This is a primary category.' }}</p>
+        </article>
+
+        <article class="detail-card">
+          <h3>Child categories</h3>
+          <div *ngIf="selectedChildCategories.length; else noChildren" class="child-list">
+            <button *ngFor="let child of selectedChildCategories; trackBy: trackCategoryById" type="button"
+              class="child-pill" (click)="selectCategoryById(child.id)">
+              <span>{{ child.title }}</span>
+              <small>{{ appService.getCategoryPath(child) }}</small>
+            </button>
+          </div>
+          <ng-template #noChildren>
+            <p>No child categories under this branch.</p>
+          </ng-template>
+        </article>
+      </div>
+
+      <article class="habits-section">
+        <div class="section-head">
+          <div>
+            <h3>Habits in this category</h3>
+            <p>These habits belong directly to <strong>{{ node.category.title }}</strong>.</p>
+          </div>
+          <span class="section-badge">{{ selectedDirectHabits.length }}</span>
+        </div>
+
+        <div *ngIf="selectedDirectHabits.length; else noHabits" class="habit-grid">
+          <app-checkbox-item *ngFor="let task of selectedDirectHabits; let index = index; trackBy: trackTaskById"
+            [task]="task" [index]="index" [isVisibleBorder]="true" (toggleComplete)="handleToggleComplete($event)">
+          </app-checkbox-item>
+        </div>
+      </article>
+    </section>
+  </section>
+</div>
+
+<ng-template #treeNodes let-nodes>
+  <div class="tree-node-list">
+    <ng-container *ngFor="let node of nodes; trackBy: trackNodeById">
+      <article class="tree-node" [class.is-selected]="isSelected(node)" [class.is-match]="node.matchesSearch">
+        <div class="node-row">
+          <button type="button" class="toggle-btn" [class.is-leaf]="!node.children.length"
+            (click)="toggleNode(node, $event)"
+            [attr.aria-label]="isExpanded(node) ? 'Collapse category' : 'Expand category'">
+            <svg *ngIf="node.children.length" viewBox="0 0 20 20" [class.is-expanded]="isExpanded(node)"
+              aria-hidden="true">
+              <path d="M7 4l6 6l-6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="1.8"></path>
+            </svg>
+          </button>
+
+          <button type="button" class="node-card" [class.is-selected]="isSelected(node)" (click)="selectNode(node)">
+            <div class="node-copy">
+              <div class="node-title-row">
+                <strong>{{ node.category.title }}</strong>
+                <span class="depth-pill">L{{ node.depth + 1 }}</span>
+              </div>
+              <p *ngIf="getParentPath(node)" class="node-path">{{ getParentPath(node) }}</p>
+            </div>
+
+            <div class="node-badges">
+              <span class="node-badge">{{ node.childCategoryCount }} sub</span>
+              <span class="node-badge node-badge-accent">{{ node.totalHabitCount }} habits</span>
+            </div>
+          </button>
+        </div>
+
+        <div *ngIf="node.children.length && isExpanded(node)" class="node-children">
+          <ng-container *ngTemplateOutlet="treeNodes; context: { $implicit: visibleChildren(node) }"></ng-container>
+        </div>
+      </article>
+    </ng-container>
+  </div>
+</ng-template>
+
+<ng-template #noSelection>
+  <section class="details-panel empty-panel">
+    <div class="empty-state">
+      <h2>Select a category</h2>
+      <p>Pick a branch from the tree to review its structure and the habits assigned to it.</p>
+    </div>
+  </section>
+</ng-template>
+
+<ng-template #noHabits>
+  <div class="empty-state compact-empty">
+    <h4>No direct habits yet</h4>
+    <p>This category is currently acting as a structural node without habits assigned directly to it.</p>
+  </div>
+</ng-template>
+
+<ng-template #noSearchResults>
+  <div class="empty-state compact-empty">
+    <h3>No matching categories</h3>
+    <p>Try searching by a broader title, description, or ancestry path.</p>
+  </div>
+</ng-template>
+
+<ng-template #emptyTree>
+  <div class="empty-state empty-tree">
+    <h2>No categories yet</h2>
+    <p>Create your first category and habits to start building the tree.</p>
+  </div>
+</ng-template>

@@ -1,0 +1,110 @@
+<div class="tree-page">
+  <header class="tree-header">
+    <div>
+      <h1>Habit Tree</h1>
+      <p>Open a category, see its habits, and mark them done without leaving the tree.</p>
+    </div>
+
+    <div class="header-stats">
+      <div class="stat-chip">
+        <strong>{{ rootCategoryCount }}</strong>
+        <span>roots</span>
+      </div>
+      <div class="stat-chip">
+        <strong>{{ totalVisibleTasks }}</strong>
+        <span>habits</span>
+      </div>
+      <div class="stat-chip">
+        <strong>{{ completedTasks }}</strong>
+        <span>done</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="toolbar" *ngIf="appService.categories.length">
+    <label class="search-box" for="treeSearch">
+      <input id="treeSearch" type="text" [(ngModel)]="searchText" (ngModelChange)="onSearchChange()"
+        placeholder="Search categories or habits" />
+    </label>
+
+    <div class="toolbar-actions">
+      <button type="button" class="toolbar-btn" (click)="expandAllVisible()">Expand all</button>
+      <button type="button" class="toolbar-btn" (click)="collapseAll()">Reset</button>
+      <button *ngIf="searchText.trim()" type="button" class="toolbar-btn toolbar-btn-light" (click)="clearSearch()">
+        Clear
+      </button>
+    </div>
+  </section>
+
+  <section *ngIf="appService.categories.length; else emptyTree" class="tree-shell">
+    <div *ngIf="visibleRootNodes.length; else noResults" class="tree-list">
+      <ng-container *ngTemplateOutlet="treeNodes; context: { $implicit: visibleRootNodes }"></ng-container>
+    </div>
+  </section>
+</div>
+
+<ng-template #treeNodes let-nodes>
+  <ul class="node-group">
+    <li *ngFor="let node of nodes; trackBy: trackNodeById" class="tree-node">
+      <div class="category-row">
+        <button
+          type="button"
+          class="expand-btn"
+          (click)="toggleNode(node, $event)"
+          [class.is-leaf]="!canExpand(node)"
+          [disabled]="!canExpand(node)"
+          [attr.aria-expanded]="isExpanded(node)"
+          [attr.aria-label]="isExpanded(node) ? 'Collapse category' : 'Expand category'">
+          <span *ngIf="canExpand(node)">{{ isExpanded(node) ? '▾' : '▸' }}</span>
+        </button>
+
+        <button type="button" class="category-card" (click)="toggleNode(node)">
+          <div class="category-copy">
+            <strong>{{ node.category.title }}</strong>
+            <p *ngIf="node.category.categoryId">{{ categoryPath(node.category) }}</p>
+          </div>
+
+          <div class="category-badges">
+            <span class="badge">{{ visibleTasks(node).length }} here</span>
+            <span class="badge badge-accent">{{ node.totalTaskCount }} total</span>
+          </div>
+        </button>
+      </div>
+
+      <div *ngIf="isExpanded(node) && canExpand(node)" class="node-content">
+        <div *ngIf="visibleTasks(node).length" class="task-list">
+          <button
+            *ngFor="let task of visibleTasks(node); trackBy: trackTaskById"
+            type="button"
+            class="task-row"
+            [class.is-done]="task.isDone"
+            (click)="handleToggleComplete(task.id)">
+            <span class="task-check" [class.is-done]="task.isDone">{{ task.isDone ? '✓' : '' }}</span>
+            <span class="task-copy">
+              <strong>{{ task.title }}</strong>
+              <small *ngIf="task.description?.trim()">{{ task.description }}</small>
+            </span>
+          </button>
+        </div>
+
+        <ng-container *ngIf="visibleChildren(node).length">
+          <ng-container *ngTemplateOutlet="treeNodes; context: { $implicit: visibleChildren(node) }"></ng-container>
+        </ng-container>
+      </div>
+    </li>
+  </ul>
+</ng-template>
+
+<ng-template #noResults>
+  <div class="empty-state">
+    <h2>No matching results</h2>
+    <p>Try a simpler search term or clear the current filter.</p>
+  </div>
+</ng-template>
+
+<ng-template #emptyTree>
+  <div class="empty-state">
+    <h2>No categories yet</h2>
+    <p>Create categories and habits first, then this tree will give you a fast checklist view.</p>
+  </div>
+</ng-template>

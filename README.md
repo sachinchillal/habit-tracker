@@ -33,21 +33,25 @@ npm install tailwindcss @tailwindcss/postcss postcss --force
 
 ng serve -o --host 0.0.0.0
 
+ng g c pages/home
+ng g c pages/tree
+ng g c pages/tree-modern
+ng g c pages/todos
+ng g c pages/grouped-todos
+ng g c pages/list
+ng g c pages/category
+ng g c pages/subcategories
+
 ng g c components/loader
-ng g c components/home
 ng g c components/toast
 ng g c components/header
 
-ng g c components/category
-ng g c components/category-list
 ng g c components/category-list
 
 ng g c components/task
 ng g c components/task-create
 ng g c components/task-list
 
-ng g c components/todos
-ng g c components/grouped-todos
 ng g c components/checkbox-item
 ng g c components/kanban-board
 ng g c components/settings
