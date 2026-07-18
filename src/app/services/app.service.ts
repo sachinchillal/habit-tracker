@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { ACTIONS, HT_Status, HT_Tracker, INIT_DAY_INFO, PAGES, Task, Category } from './interfaces';
+import { ACTIONS, ApiTask, HT_Status, HT_Tracker, INIT_DAY_INFO, INIT_TASK, PAGES, Task, Category } from './interfaces';
 import { ApiService } from './api.service';
 
 const LOCAL_STORAGE_KEY = 'habit_tracker';
@@ -282,13 +282,15 @@ export class AppService {
   public fetchTasks() {
     this.isLoading = true;
     this.apiService.getTasks().subscribe({
-      next: (tasks: any) => {
-        const _tasks = tasks.data;
-        _tasks.forEach((task: Task) => {
-          if (task.categoryId) {
-            task.categoryName = this.categoriesMap[task.categoryId]?.title;
-          }
-        });
+      next: (res) => {
+        const apiTasks: ApiTask[] = res.data ?? [];
+        const _tasks: Task[] = apiTasks.map((task) => ({
+          ...INIT_TASK,
+          ...task,
+          categoryName: task.categoryId
+            ? this.categoriesMap[task.categoryId]?.title
+            : undefined,
+        }));
         this.saveTasks(_tasks);
         this.isLoading = false;
       },

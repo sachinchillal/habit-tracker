@@ -12,7 +12,34 @@ export interface BaseProps extends DateProps {
 
 export interface ApiTask extends BaseProps {
   isPaused: boolean;
+
+  categoryId?: number; // Optional category ID
+  weekDays?: WeekDay[];
 }
+export interface Task extends ApiTask {
+  // UI-only (set in app.service)
+  categoryName?: string;
+  isDone: boolean;
+  lastUpdatedAt: number;
+  lastUpdated: string;
+  lastUpdatedColor: string;
+}
+export const INIT_TASK: Task = {
+  id: 0,
+  title: '',
+  description: '',
+  categoryId: undefined,
+  weekDays: undefined,
+  isActive: false,
+  isPaused: false,
+  createdAt: +new Date(),
+  updatedAt: +new Date(),
+  categoryName: undefined,
+  isDone: false,
+  lastUpdatedAt: 0,
+  lastUpdated: '',
+  lastUpdatedColor: 'text-slate-red dark:text-red-400',
+};
 export interface ApiCategory extends BaseProps {
   parentId?: number;
 }
@@ -119,38 +146,6 @@ export const INIT_TASK_CREATE: TaskCreate = {
   categoryId: undefined,
   weekDays: [],
 };
-export interface Task extends TaskCreate, DateProps {
-  id: number;
-
-  isActive: boolean;
-  // UI properties
-  categoryName?: string; // Optional category Name
-
-  isDone: boolean;
-  isPaused: boolean;
-
-  lastUpdatedAt: number;
-  lastUpdated: string;
-  lastUpdatedColor: string;
-}
-export const INIT_TASK: Task = {
-  id: 0,
-
-  title: '',
-  description: '',
-  categoryId: undefined,
-
-  isActive: false,
-  createdAt: +new Date(),
-  updatedAt: +new Date(),
-
-  isDone: false,
-  isPaused: false,
-
-  lastUpdatedAt: 0,
-  lastUpdated: '',
-  lastUpdatedColor: 'text-slate-red dark:text-red-400',
-}
 export interface HT_Status extends DateProps {
   day: number;
   isDone: boolean;

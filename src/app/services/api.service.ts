@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
-import { TaskCreate, Category } from './interfaces';
+import { ApiTask, TaskCreate, Category } from './interfaces';
 
 const API = environment.API_URL + 'habitTracker/';
 
@@ -52,7 +52,7 @@ export class ApiService {
     return this.httpClient.post(API + 'task', body);
   }
   getTasks() {
-    return this.httpClient.get(API + 'task');
+    return this.httpClient.get<{ data: ApiTask[] }>(API + 'task');
   }
   taskUpdate(task: TaskCreate) {
     const body: any = {
