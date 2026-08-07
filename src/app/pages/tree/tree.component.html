@@ -47,13 +47,8 @@
   <ul class="node-group">
     <li *ngFor="let node of nodes; trackBy: trackNodeById" class="tree-node">
       <div class="category-row">
-        <button
-          type="button"
-          class="expand-btn"
-          (click)="toggleNode(node, $event)"
-          [class.is-leaf]="!canExpand(node)"
-          [disabled]="!canExpand(node)"
-          [attr.aria-expanded]="isExpanded(node)"
+        <button type="button" class="expand-btn" (click)="toggleNode(node, $event)" [class.is-leaf]="!canExpand(node)"
+          [disabled]="!canExpand(node)" [attr.aria-expanded]="isExpanded(node)"
           [attr.aria-label]="isExpanded(node) ? 'Collapse category' : 'Expand category'">
           <span *ngIf="canExpand(node)">{{ isExpanded(node) ? '▾' : '▸' }}</span>
         </button>
@@ -73,16 +68,12 @@
 
       <div *ngIf="isExpanded(node) && canExpand(node)" class="node-content">
         <div *ngIf="visibleTasks(node).length" class="task-list">
-          <button
-            *ngFor="let task of visibleTasks(node); trackBy: trackTaskById"
-            type="button"
-            class="task-row"
-            [class.is-done]="task.isDone"
-            (click)="handleToggleComplete(task.id)">
+          <button *ngFor="let task of visibleTasks(node); trackBy: trackTaskById" type="button" class="task-row"
+            [class.is-done]="task.isDone" (click)="handleToggleComplete(task.id)">
             <span class="task-check" [class.is-done]="task.isDone">{{ task.isDone ? '✓' : '' }}</span>
             <span class="task-copy">
               <strong>{{ task.title }}</strong>
-              <small *ngIf="task.description?.trim()">{{ task.description }}</small>
+              <small *ngIf="task.description">{{ task.description }}</small>
             </span>
           </button>
         </div>

@@ -16,7 +16,7 @@
           {{ parentPath }}
         </span>
       </div>
-      <p *ngIf="c.description?.trim()" class="mb-2 text-sm text-slate-500 dark:text-slate-400 line-clamp-2"
+      <p *ngIf="c.description" class="mb-2 text-sm text-slate-500 dark:text-slate-400 line-clamp-2"
         [title]="c.description">
         {{ c.description }}
       </p>
@@ -28,9 +28,7 @@
           +
         </button>
         <button title="Delete category" aria-label="Delete category" (click)="handleDelete(c)"
-          class="p-1 hover:bg-red-900 rounded">
-          &#128465;
-        </button>
+          class="p-1 hover:bg-red-900 rounded">{{"&#128465;"}}</button>
         <button title="Edit category" aria-label="Edit category" (click)="handleEdit(c)"
           class="p-1 hover:bg-blue-900 rounded">
           &#9999;

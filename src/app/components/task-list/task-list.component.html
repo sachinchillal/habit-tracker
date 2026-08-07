@@ -1,24 +1,26 @@
-<div>
-  <div class="flex items-center mb-4">
+<div class="flex flex-col h-full">
+  <div class="flex items-center justify-between gap-4 mb-4 shrink-0 flex-wrap">
     <h2 class="text-xl font-bold">Tasks
       <span class="text-xs text-gray-500 ml-2">({{appService.tasks.length}})</span>
     </h2>
+    <div class="flex items-center gap-2">
+      <input type="search" class="border dark:border-slate-700 rounded-md px-2 py-1" placeholder="Search tasks..."
+        [(ngModel)]="appService.searchText" (ngModelChange)="appService.onSearch()" />
+      <button type="button" class="secondary-btn btn-sm" title="Clear search"
+        (click)="appService.searchText = ''; appService.onSearch();">Clear</button>
+    </div>
   </div>
-  <ul class="space-y-2 max-h-[70vh] overflow-y-auto scrollbar">
+  <ul class="space-y-2 overflow-y-auto scrollbar flex-1 min-h-0">
     <li *ngFor="let t of appService.tasks; let index=index; trackBy: trackCategoryById"
       class="relative rounded shadow p-2 border border-gray-200 dark:border-gray-700">
       <div class="mb-2">{{t.title}}</div>
       <div class="mb-2 text-gray-400">{{t.description}}</div>
       <div class="flex gap-2 items-center">
-        <div class="text-xs text-gray-500">{{t.id | date:'medium'}}</div>
+        <div class="text-xs text-gray-500">{{t.createdAt | date:'medium'}}</div>
         <ng-container *ngIf="t.categoryId && t.categoryName">
           | <div class="text-xs text-gray-500">{{t.categoryName}}</div>
         </ng-container>
         <i class="ms-auto"></i>
-        <button title="Delete Note" aria-label="Delete Note" (click)="handleDelete(t)"
-          class="p-1 hover:bg-red-900 rounded">
-          &#128465;
-        </button>
 
         <button *ngIf="!t.isPaused" title="Pause Task" aria-label="Pause Task" (click)="handlePause(t)"
           class="p-1 hover:bg-yellow-900 rounded">
@@ -28,7 +30,9 @@
           class="p-1 hover:bg-yellow-900 rounded">
           &#9205;
         </button>
-        <button title="Edit Note" aria-label="Edit Note" (click)="handleEdit(t)" class="p-1 hover:bg-blue-900 rounded">
+        <button title="Delete Task" aria-label="Delete Task" (click)="handleDelete(t)"
+          class="p-1 hover:bg-red-900 rounded">{{"&#128465;"}}</button>
+        <button title="Edit Task" aria-label="Edit Task" (click)="handleEdit(t)" class="p-1 hover:bg-blue-900 rounded">
           &#9999;
         </button>
       </div>

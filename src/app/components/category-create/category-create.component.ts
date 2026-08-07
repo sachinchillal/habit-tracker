@@ -15,6 +15,7 @@ import { ToastService } from '../../services/toast.service';
 })
 export class CategoryCreateComponent implements OnInit {
   category: Category = { ...INIT_CATEGORY };
+  autoClear = true;
 
   constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService) { }
 
@@ -80,7 +81,9 @@ export class CategoryCreateComponent implements OnInit {
   }
 
   private onSuccess(message: string) {
-    this.resetForm();
+    if (this.autoClear) {
+      this.resetForm();
+    }
     this.toastService.showToastAuto('Success', message, TOAST_TYPE.SUCCESS);
     this.appService.fetchCategories();
   }

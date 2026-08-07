@@ -69,20 +69,20 @@ export class ApiService {
     return this.httpClient.put(API + 'task', body);
   }
   pauseTask(id: number) {
-    return this.httpClient.put(API + 'task/pause/' + id, {});
+    return this.httpClient.put(API + `task/${id}/pause`, {});
   }
   resumeTask(id: number) {
-    return this.httpClient.put(API + 'task/resume/' + id, {});
+    return this.httpClient.put(API + `task/${id}/resume`, {});
   }
   taskDelete(id: number) {
-    return this.httpClient.delete(API + 'task/' + id);
+    return this.httpClient.delete(API + `task/${id}`);
   }
 
   markTaskCompleted(id: number) {
-    return this.httpClient.get(API + 'task/' + id + '/mark');
+    return this.httpClient.get(API + `task/${id}/mark`);
   }
   markTaskCompletedByTimestamp(id: number, timestamp: number) {
-    return this.httpClient.get(API + 'task/' + id + '/mark/' + timestamp);
+    return this.httpClient.get(API + `task/${id}/mark/${timestamp}`);
   }
   getMarks() {
     return this.httpClient.get<{ data: ApiMarksObject }>(API + 'marks');

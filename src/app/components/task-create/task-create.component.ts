@@ -26,6 +26,7 @@ import { ToastService } from '../../services/toast.service';
 })
 export class TaskCreateComponent implements OnInit {
   task: TaskCreate = { ...INIT_TASK_CREATE };
+  autoClear = true;
   readonly weekDayOptions = WEEK_DAY_OPTIONS;
 
   constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService) { }
@@ -86,7 +87,9 @@ export class TaskCreateComponent implements OnInit {
     if (this.task.id) {
       this.apiService.taskUpdate(payload).subscribe({
         next: (response) => {
-          this.resetForm();
+          if (this.autoClear) {
+            this.resetForm();
+          }
           this.toastService.showToastAuto('Success', 'Task updated successfully.', TOAST_TYPE.SUCCESS);
           this.appService.fetchTasks();
         },
@@ -102,7 +105,9 @@ export class TaskCreateComponent implements OnInit {
     } else {
       this.apiService.taskCreate(payload).subscribe({
         next: (response) => {
-          this.resetForm();
+          if (this.autoClear) {
+            this.resetForm();
+          }
           this.toastService.showToastAuto('Success', 'Task created successfully.', TOAST_TYPE.SUCCESS);
           this.appService.fetchTasks();
         },
