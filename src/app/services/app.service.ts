@@ -1,12 +1,12 @@
 import { EventEmitter, Injectable } from '@angular/core';
-import { ACTIONS, ApiTask, HT_Status, HT_Tracker, INIT_DAY_INFO, INIT_TASK, PAGES, Task, Category } from './interfaces';
+import { ACTIONS, ApiMarksObject, ApiTask, INIT_TASK, PAGES, Task, Category } from './interfaces';
 import { ApiService } from './api.service';
 
-const LOCAL_STORAGE_KEY = 'habit_tracker';
+const LOCAL_STORAGE_KEY = 'habitTracker';
 interface LocalStorageData {
   categories: Category[];
   tasks: Task[];
-  trackers: HT_Tracker[];
+  marks: ApiMarksObject;
 }
 interface AppEventEmitter {
   action: ACTIONS,
@@ -23,12 +23,13 @@ export class AppService {
   readonly tasks: Task[] = [];
   readonly tasksOriginal: Task[] = [];
   noOfTasksDone: number = 0;
-  readonly trackers: HT_Tracker[] = [];
+  marks: ApiMarksObject = {};
   tasksMap: { [key: number]: Task } = {};
-  trackersMap: { [key: number]: HT_Tracker } = {};
   categoriesMap: { [key: number]: Category } = {};
 
   eventEmitter = new EventEmitter<AppEventEmitter>();
+  /** Fired when tasks or marks are reassigned so views can rebuild derived UI. */
+  habitsDataChanged = new EventEmitter<void>();
 
   currentPage: PAGES = PAGES.HOME;
 
@@ -51,8 +52,8 @@ export class AppService {
     } else {
       this.fetchTasks();
     }
-    if (d.trackers && d.trackers.length > 0) {
-      this.assignTrakers(d.trackers);
+    if (d.marks && Object.keys(d.marks).length > 0) {
+      this.assignMarks(d.marks);
     } else {
       this.fetchTrackers();
     }
@@ -317,56 +318,50 @@ export class AppService {
       this.tasksMap[task.id] = task;
     });
     this.buildUIProps();
+    this.habitsDataChanged.emit();
   }
-  //  TRACKERS
+  //  MARKS
   public fetchTrackers() {
     this.isLoading = true;
     this.apiService.getMarks().subscribe({
-      next: (res: any) => {
-        this.saveTrackers(Object.values(res.data));
+      next: (res) => {
+        this.saveMarks(res.data ?? {});
         this.setCurrentPage(this.currentPage); // to rearrange tasks if on todos page
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error fetching trackers:', error);
+        console.error('Error fetching marks:', error);
         this.isLoading = false;
       }
     });
   }
-  public saveTrackers(trackers: HT_Tracker[]): void {
-    this.assignTrakers(trackers);
+  public saveMarks(marks: ApiMarksObject): void {
+    this.assignMarks(marks);
     const d = this.getLocalStorage();
-    d.trackers = this.trackers;
+    d.marks = this.marks;
     this.saveToLocalStorage(d);
   }
-  private assignTrakers(trackers: HT_Tracker[]): void {
-    this.trackers.length = 0; // Clear existing trackers
-    this.trackers.push(...trackers);
-    this.trackersMap = {}; // Reset the tracker map
-    this.trackers.forEach(tracker => {
-      // Initialize the tracker map for quick access
-      this.trackersMap[tracker.id] = tracker;
-    });
+  private assignMarks(marks: ApiMarksObject): void {
+    this.marks = marks ?? {};
     this.buildUIProps();
+    this.habitsDataChanged.emit();
   }
   // UI Properties
   private buildUIProps() {
     this.buildUIPropsForTasks();
-    this.buildUIPropsForTrackers();
   }
   private buildUIPropsForTasks() {
     // Update tasksOriginal to ensure all tasks are updated, not just filtered ones
     this.tasksOriginal.forEach(task => {
-      const t = this.trackersMap[task.id];
-      if (t && t.status.length > 0) {
-        const lastStatus = t.status[t.status.length - 1];
-        const lastCreatedAt = new Date(lastStatus.createdAt);
+      const timestamps = this.marks[task.id];
+      if (timestamps && timestamps.length > 0) {
+        const lastTs = Math.max(...timestamps);
+        const lastCreatedAt = new Date(lastTs);
         const today = new Date();
-        // check if the last status was created today
         const isToday = lastCreatedAt.getDate() === today.getDate() &&
           lastCreatedAt.getMonth() === today.getMonth() &&
           lastCreatedAt.getFullYear() === today.getFullYear();
-        task.isDone = isToday && lastStatus.isDone;
+        task.isDone = isToday;
 
         const differenceInDays = Math.floor((today.getTime() - lastCreatedAt.getTime()) / (1000 * 60 * 60 * 24));
         const differenceInHours = Math.floor((today.getTime() - lastCreatedAt.getTime()) / (1000 * 60 * 60));
@@ -388,8 +383,7 @@ export class AppService {
           }
         }
 
-        task.lastUpdatedAt = lastStatus.createdAt;
-        task.isPaused = t.paused;
+        task.lastUpdatedAt = lastTs;
       }
     });
     // Calculate noOfTasksDone from tasksOriginal to get accurate count
@@ -400,93 +394,12 @@ export class AppService {
       this.applySearchFilter();
     }
   }
-  private buildUIPropsForTrackers() {
-    this.trackers.forEach(tracker => {
-      this.dayInfoBuilder(tracker);
-    });
-  }
-
-  private dayInfoBuilder(tracker: HT_Tracker) {
-    tracker.daysList = [];
-    const statusMap: { [key: number]: HT_Status } = {}
-    let preStatus: HT_Status | null = null;
-    for (let index = 0; index < tracker.status.length; index++) {
-      const s = tracker.status[index];
-      statusMap[s.day] = s;
-
-      if (preStatus) {
-        // Fill in the gaps between statuses
-        for (let day = preStatus.day + 1; day < s.day; day++) {
-          const di = { ...INIT_DAY_INFO };
-          di.id = tracker.daysList.length + 1;
-          di.status = "Missed";
-          di.color = 'bg-rose-900';
-
-          di.createdAt = new Date(preStatus.createdAt).getTime() + (day - preStatus.day) * 24 * 60 * 60 * 1000; // Increment day by day
-          tracker.daysList.push(di);
-        }
-        // Add the current status
-
-        const di = { ...INIT_DAY_INFO };
-        di.id = tracker.daysList.length + 1;
-        di.status = s.isDone ? 'Done' : 'Missed';
-        di.color = s.isDone ? 'bg-emerald-500' : 'bg-rose-900';
-        di.createdAt = s.createdAt;
-        tracker.daysList.push(di);
-
-      } else {
-        const di = { ...INIT_DAY_INFO };
-        di.id = 1;
-        di.status = s.isDone ? 'Done' : 'Missed';
-        di.color = s.isDone ? 'bg-emerald-500' : 'bg-rose-900';
-        di.createdAt = s.createdAt;
-        tracker.daysList.push(di);
-      }
-      preStatus = s;
-    }
-    if (tracker.status.length > 0) {
-      const lastStatus = tracker.status[tracker.status.length - 1];
-      const lastCreatedAt = new Date(lastStatus.createdAt);
-      lastCreatedAt.setHours(0, 0, 0, 0); // Reset time to midnight
-
-      // check lastCreatedAt is today or not, if not then add it as pending
-      const today = new Date();
-      if (lastCreatedAt.getDate() !== today.getDate() ||
-        lastCreatedAt.getMonth() !== today.getMonth() ||
-        lastCreatedAt.getFullYear() !== today.getFullYear()) {
-
-        // Also fill in the gap from last status to yesterday
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        yesterday.setHours(0, 0, 0, 0); // Reset time to midnight
-        let day = lastCreatedAt;
-        // increment day by 1
-        day.setDate(day.getDate() + 1);
-        for (; day <= yesterday; day.setDate(day.getDate() + 1)) {
-          const di = { ...INIT_DAY_INFO };
-          di.id = tracker.daysList.length + 1;
-          di.status = "Missed";
-          di.color = 'bg-rose-900';
-          di.createdAt = new Date(day).getTime(); // Increment day by day
-          tracker.daysList.push(di);
-        }
-
-        const di = { ...INIT_DAY_INFO };
-        di.id = tracker.daysList.length + 1;
-        tracker.daysList.push(di);
-      }
-      // take only last 34 days info
-      if (tracker.daysList.length > 35) {
-        tracker.daysList = tracker.daysList.slice(-35);
-      }
-    }
-  }
 
   // Storage Management
 
   private getLocalStorage(): LocalStorageData {
     const data = localStorage.getItem(LOCAL_STORAGE_KEY);
-    return data ? JSON.parse(data) : { tasks: [], trackers: [], categories: [] };
+    return data ? JSON.parse(data) : { tasks: [], marks: {}, categories: [] };
   }
   private saveToLocalStorage(d: LocalStorageData): void {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(d));

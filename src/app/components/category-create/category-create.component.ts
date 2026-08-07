@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from "@angular/forms";
 import { ApiService } from '../../services/api.service';
-import { ACTIONS, INIT_UI_CATEGORY, TOAST_TYPE, Category } from '../../services/interfaces';
+import { ACTIONS, INIT_CATEGORY, TOAST_TYPE, Category } from '../../services/interfaces';
 import { AppService } from '../../services/app.service';
 import { ToastService } from '../../services/toast.service';
 
@@ -14,7 +14,7 @@ import { ToastService } from '../../services/toast.service';
   styleUrl: './category-create.component.scss'
 })
 export class CategoryCreateComponent implements OnInit {
-  category: Category = { ...INIT_UI_CATEGORY };
+  category: Category = { ...INIT_CATEGORY };
 
   constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService) { }
 
@@ -28,7 +28,7 @@ export class CategoryCreateComponent implements OnInit {
         return;
       }
       if (eventData.id) {
-        this.category = { ...INIT_UI_CATEGORY, ...eventData } as Category;
+        this.category = { ...INIT_CATEGORY, ...eventData } as Category;
         return;
       }
       // Add-child: pre-fill parent only
@@ -76,7 +76,7 @@ export class CategoryCreateComponent implements OnInit {
   }
 
   resetForm() {
-    this.category = { ...INIT_UI_CATEGORY };
+    this.category = { ...INIT_CATEGORY };
   }
 
   private onSuccess(message: string) {
