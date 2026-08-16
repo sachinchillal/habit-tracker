@@ -14,8 +14,34 @@ import { ACTIONS, Task } from '../../services/interfaces';
   styleUrl: './task-list.component.scss'
 })
 export class TaskListComponent {
+  tasks: Task[] = [];
+
   constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService) { }
 
+  ngOnInit() {
+    this.tasks = this.appService.tasksOriginal;
+  }
+
+  private timeoutId: any;
+  onSearch() {
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+    }
+    this.timeoutId = setTimeout(() => {
+      this.applySearchFilter();
+      this.timeoutId = null;
+    }, 300);
+  }
+
+  private applySearchFilter() {
+    this.tasks = this.appService.searchText.trim() === '' ? this.appService.tasksOriginal :
+      this.appService.tasksOriginal.filter(task => {
+        const searchKey = this.appService.searchText.toLowerCase();
+        return task.title.toLowerCase().includes(searchKey) ||
+          (task.description && task.description.toLowerCase().includes(searchKey)) ||
+          (task.categoryName && task.categoryName.toLowerCase().includes(searchKey));
+      });
+  }
   /**
    * trackBy function for ngFor to improve performance.
    * @param index - The index of the item.

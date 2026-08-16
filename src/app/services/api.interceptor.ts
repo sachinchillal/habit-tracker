@@ -6,7 +6,7 @@ import { environment } from '../../environments/environment';
 export const authenticationInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn) => {
   const authService = inject(AuthService);
   const h = {
-    AccessCode: environment.ACCESS_CODE, Authorization: '',
+    AccessCode: environment.api.accessCode, Authorization: '',
     uid: authService.uid || '', li: authService.localId || '',
     'X-Referer': window.location.href
   };

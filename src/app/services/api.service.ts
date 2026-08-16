@@ -3,7 +3,7 @@ import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { ApiMarksObject, ApiTask, TaskCreate, Category } from './interfaces';
 
-const API = environment.API_URL + 'habitTracker/';
+const API = `${environment.api.baseUrl}${environment.api.habitTracker}`;
 
 @Injectable({
   providedIn: 'root'

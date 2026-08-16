@@ -4,12 +4,11 @@ import { CommonModule } from '@angular/common';
 import { AppService } from '../../services/app.service';
 import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
-import { TOAST_TYPE, Category } from '../../services/interfaces';
+import { TOAST_TYPE, Category, ViewMode } from '../../services/interfaces';
 import { CheckboxItemComponent } from '../../components/checkbox-item/checkbox-item.component';
 import { KanbanBoardComponent } from '../../components/kanban-board/kanban-board.component';
 import { ActivatedRoute } from '@angular/router';
-
-const TODOS_VIEW_STORAGE_KEY = 'habit-tracker-todos-view';
+import { StoreService } from '../../services/store.service';
 
 export interface CategoryCount {
   id: number | 'uncategorized';
@@ -31,16 +30,19 @@ interface QuickSelection {
   styleUrl: './todos.component.scss'
 })
 export class TodosComponent implements OnInit {
-  viewMode: 'list' | 'board' = 'list';
+  viewMode: ViewMode = 'board';
   showCategoriesModal = false;
   showQuickSelectionModal = false;
-  private readonly validViewModes: ('list' | 'board')[] = ['list', 'board'];
   scrollToColumnId: number | 'uncategorized' | null = null;
   quickSelections: QuickSelection[] = [];
 
-  constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService, private activatedRoute: ActivatedRoute) {
+  constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService, private activatedRoute: ActivatedRoute, private storeService: StoreService) {
     this.appService.setCurrentPage(this.activatedRoute.snapshot.data['page']);
   }
+  ngOnInit(): void {
+    this.viewMode = this.storeService.getTodosView();
+  }
+
 
   /** Categories with task count (matches kanban columns: uncategorized + each category). */
   get categoryCounts(): CategoryCount[] {
@@ -104,16 +106,9 @@ export class TodosComponent implements OnInit {
     this.closeQuickSelectionModal();
   }
 
-  ngOnInit(): void {
-    const stored = localStorage.getItem(TODOS_VIEW_STORAGE_KEY);
-    if (stored && this.validViewModes.includes(stored as 'list' | 'board')) {
-      this.viewMode = stored as 'list' | 'board';
-    }
-  }
-
-  setViewMode(mode: 'list' | 'board'): void {
+  setViewMode(mode: ViewMode): void {
     this.viewMode = mode;
-    localStorage.setItem(TODOS_VIEW_STORAGE_KEY, mode);
+    this.storeService.saveTodosView(mode);
   }
 
   /**

@@ -5,6 +5,7 @@ import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AppService } from '../../services/app.service';
 import { SettingsComponent } from '../settings/settings.component';
+import { environment } from '../../../environments/environment';
 
 interface NavLink {
   path: string;
@@ -19,7 +20,7 @@ interface NavLink {
   styleUrl: './header.component.scss'
 })
 export class HeaderComponent {
-  readonly appTitle = 'Habit Tracker';
+  readonly appTitle = environment.appTitle;
   readonly logoSrc = 'android-chrome-192x192.png';
 
   showSettingsModal = false;

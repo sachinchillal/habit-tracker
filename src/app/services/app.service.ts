@@ -1,13 +1,8 @@
 import { EventEmitter, Injectable } from '@angular/core';
 import { ACTIONS, ApiMarksObject, ApiTask, INIT_TASK, PAGES, Task, Category } from './interfaces';
 import { ApiService } from './api.service';
+import { StoreService } from './store.service';
 
-const LOCAL_STORAGE_KEY = 'habitTracker';
-interface LocalStorageData {
-  categories: Category[];
-  tasks: Task[];
-  marks: ApiMarksObject;
-}
 interface AppEventEmitter {
   action: ACTIONS,
   data: Task | Category | Partial<Category>
@@ -37,23 +32,25 @@ export class AppService {
   time: string = '';
   searchText: string = '';
 
-  constructor(private apiService: ApiService) {
+  constructor(private apiService: ApiService, private storeService: StoreService) {
     this.initStore();
   }
   private initStore() {
-    const d = this.getLocalStorage();
-    if (d.categories && d.categories.length > 0) {
-      this.assignCategories(d.categories);
+    const categories = this.storeService.getCategories();
+    if (categories && categories.length > 0) {
+      this.assignCategories(categories);
     } else {
       this.fetchCategories();
     }
-    if (d.tasks && d.tasks.length > 0) {
-      this.assignTasks(d.tasks);
+    const tasks = this.storeService.getTasks();
+    if (tasks && tasks.length > 0) {
+      this.assignTasks(tasks);
     } else {
       this.fetchTasks();
     }
-    if (d.marks && Object.keys(d.marks).length > 0) {
-      this.assignMarks(d.marks);
+    const marks = this.storeService.getMarks();
+    if (marks && Object.keys(marks).length > 0) {
+      this.assignMarks(marks);
     } else {
       this.fetchTrackers();
     }
@@ -174,9 +171,7 @@ export class AppService {
 
   public saveCategories(categories: Category[]): void {
     this.assignCategories(categories);
-    const d = this.getLocalStorage();
-    d.categories = this.categories;
-    this.saveToLocalStorage(d);
+    this.storeService.saveCategories(this.categories);
   }
   private assignCategories(categories: Category[]): void {
     this.categories.length = 0; // Clear existing categories
@@ -303,9 +298,7 @@ export class AppService {
 
   public saveTasks(tasks: Task[]): void {
     this.assignTasks(tasks);
-    const d = this.getLocalStorage();
-    d.tasks = this.tasks;
-    this.saveToLocalStorage(d);
+    this.storeService.saveTasks(this.tasks);
   }
   private assignTasks(tasks: Task[]): void {
     this.tasks.length = 0; // Clear existing tasks
@@ -337,9 +330,7 @@ export class AppService {
   }
   public saveMarks(marks: ApiMarksObject): void {
     this.assignMarks(marks);
-    const d = this.getLocalStorage();
-    d.marks = this.marks;
-    this.saveToLocalStorage(d);
+    this.storeService.saveMarks(this.marks);
   }
   private assignMarks(marks: ApiMarksObject): void {
     this.marks = marks ?? {};
@@ -395,13 +386,4 @@ export class AppService {
     }
   }
 
-  // Storage Management
-
-  private getLocalStorage(): LocalStorageData {
-    const data = localStorage.getItem(LOCAL_STORAGE_KEY);
-    return data ? JSON.parse(data) : { tasks: [], marks: {}, categories: [] };
-  }
-  private saveToLocalStorage(d: LocalStorageData): void {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(d));
-  }
 }

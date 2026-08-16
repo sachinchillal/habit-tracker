@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { THEME_TYPE } from './interfaces';
+import { StoreService } from './store.service';
 
 @Injectable({
   providedIn: 'root'
@@ -7,12 +8,12 @@ import { THEME_TYPE } from './interfaces';
 export class ThemeService {
   currentThemeType: THEME_TYPE = THEME_TYPE.AUTO;
 
-  constructor() {
+  constructor(private storeService: StoreService) {
     this.init();
   }
 
   private init() {
-    this.currentThemeType = localStorage.getItem('theme') as THEME_TYPE || THEME_TYPE.AUTO;
+    this.currentThemeType = this.storeService.getThemeType();
     this.changeTheme(this.currentThemeType);
   }
 
@@ -40,7 +41,7 @@ export class ThemeService {
 
       document.documentElement.dataset['theme'] = 'light';
     }
-    localStorage.setItem('theme', theme);
+    this.storeService.saveThemeType(theme);
   }
 
 }

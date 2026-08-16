@@ -188,3 +188,5 @@ export enum BORDER_ITEMS {
   LEVEL_2_BORDER = 'Level 2 Border',
 }
 export type BorderItem = { label: BORDER_ITEMS; checked: boolean };
+
+export type ViewMode = 'list' | 'board';

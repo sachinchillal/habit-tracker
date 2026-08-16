@@ -7,6 +7,7 @@
     "start": "ng serve",
     "build": "ng build",
     "b": "ng build --base-href=/habit-tracker/",
+    "g": "ng build --base-href=/g/",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
