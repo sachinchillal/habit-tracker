@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { FormsModule } from "@angular/forms";
 import { ApiService } from '../../services/api.service';
 import {
   ACTIONS,
+  Category,
   INIT_TASK_CREATE,
   TaskCreate,
   TOAST_TYPE,
@@ -26,7 +27,9 @@ import { ToastService } from '../../services/toast.service';
 })
 export class TaskCreateComponent implements OnInit {
   task: TaskCreate = { ...INIT_TASK_CREATE };
-  autoClear = true;
+  categoryQuery = '';
+  categoryDropdownOpen = false;
+  highlightedIndex = -1;
   readonly weekDayOptions = WEEK_DAY_OPTIONS;
 
   constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService) { }
@@ -39,12 +42,150 @@ export class TaskCreateComponent implements OnInit {
           ...data,
           weekDays: data.weekDays?.length ? [...data.weekDays] : [],
         };
+        this.syncCategoryQueryFromSelection();
+        this.categoryDropdownOpen = false;
+        this.highlightedIndex = -1;
       }
     });
   }
 
   get selectedDaysSummary(): string {
     return formatSelectedWeekDays(this.task.weekDays);
+  }
+
+  get selectedCategoryPath(): string {
+    if (!this.task.categoryId) {
+      return '';
+    }
+    return this.appService.getCategoryPath(+this.task.categoryId);
+  }
+
+  get filteredCategories(): Category[] {
+    let search = this.categoryQuery.trim().toLowerCase();
+    const selectedPath = this.selectedCategoryPath.toLowerCase();
+    if (selectedPath && search === selectedPath) {
+      search = '';
+    }
+    return this.appService.categories.filter((category) => {
+      if (this.appService.leafOnly && !this.appService.isLeafCategory(category)) {
+        return false;
+      }
+      if (!search) {
+        return true;
+      }
+      const path = this.appService.getCategoryPath(category).toLowerCase();
+      const title = category.title.toLowerCase();
+      const description = (category.description ?? '').toLowerCase();
+      return path.includes(search) || title.includes(search) || description.includes(search);
+    });
+  }
+
+  categoryOptionLabel(category: Category): string {
+    const path = this.appService.getCategoryPath(category);
+    const count = this.appService.categoryTaskMap[category.id ?? 0]?.length ?? 0;
+    return `${path} (${count})`;
+  }
+
+  openCategoryDropdown(): void {
+    this.categoryDropdownOpen = true;
+    if (this.highlightedIndex < 0) {
+      this.highlightedIndex = 0;
+    }
+  }
+
+  onCategoryQueryChange(): void {
+    this.openCategoryDropdown();
+    this.highlightedIndex = 0;
+  }
+
+  selectCategory(category: Category): void {
+    this.task.categoryId = category.id;
+    this.categoryQuery = this.appService.getCategoryPath(category);
+    this.categoryDropdownOpen = false;
+    this.highlightedIndex = -1;
+  }
+
+  clearCategory(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.task.categoryId = undefined;
+    this.categoryQuery = '';
+    this.categoryDropdownOpen = false;
+    this.highlightedIndex = -1;
+  }
+
+  onCategoryKeydown(event: KeyboardEvent): void {
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        if (!this.categoryDropdownOpen) {
+          this.openCategoryDropdown();
+        } else {
+          this.moveHighlight(1);
+        }
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        if (!this.categoryDropdownOpen) {
+          this.openCategoryDropdown();
+        } else {
+          this.moveHighlight(-1);
+        }
+        break;
+      case 'Enter':
+        if (this.categoryDropdownOpen) {
+          event.preventDefault();
+          const category = this.filteredCategories[this.highlightedIndex];
+          if (category) {
+            this.selectCategory(category);
+          }
+        }
+        break;
+      case 'Escape':
+        event.preventDefault();
+        this.closeCategoryDropdown();
+        break;
+      case 'Tab':
+        this.closeCategoryDropdown();
+        break;
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.categoryDropdownOpen) {
+      return;
+    }
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('.category-typeahead')) {
+      return;
+    }
+    this.closeCategoryDropdown();
+  }
+
+  private closeCategoryDropdown(): void {
+    this.categoryDropdownOpen = false;
+    this.highlightedIndex = -1;
+    if (!this.categoryQuery.trim()) {
+      this.task.categoryId = undefined;
+      this.categoryQuery = '';
+      return;
+    }
+    this.syncCategoryQueryFromSelection();
+  }
+
+  private moveHighlight(delta: number): void {
+    const count = this.filteredCategories.length;
+    if (count === 0) {
+      this.highlightedIndex = -1;
+      return;
+    }
+    const current = this.highlightedIndex < 0 ? 0 : this.highlightedIndex;
+    this.highlightedIndex = (current + delta + count) % count;
+  }
+
+  private syncCategoryQueryFromSelection(): void {
+    this.categoryQuery = this.selectedCategoryPath;
   }
 
   isWeekDaySelected(day: WeekDay): boolean {
@@ -87,7 +228,7 @@ export class TaskCreateComponent implements OnInit {
     if (this.task.id) {
       this.apiService.taskUpdate(payload).subscribe({
         next: (response) => {
-          if (this.autoClear) {
+          if (this.appService.autoClear) {
             this.resetForm();
           }
           this.toastService.showToastAuto('Success', 'Task updated successfully.', TOAST_TYPE.SUCCESS);
@@ -105,7 +246,7 @@ export class TaskCreateComponent implements OnInit {
     } else {
       this.apiService.taskCreate(payload).subscribe({
         next: (response) => {
-          if (this.autoClear) {
+          if (this.appService.autoClear) {
             this.resetForm();
           }
           this.toastService.showToastAuto('Success', 'Task created successfully.', TOAST_TYPE.SUCCESS);
@@ -125,6 +266,9 @@ export class TaskCreateComponent implements OnInit {
 
   resetForm() {
     this.task = { ...INIT_TASK_CREATE };
+    this.categoryQuery = '';
+    this.categoryDropdownOpen = false;
+    this.highlightedIndex = -1;
   }
 
   private buildPayload(): TaskCreate {

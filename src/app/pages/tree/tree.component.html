@@ -28,8 +28,9 @@
     </label>
 
     <div class="toolbar-actions">
+      <button type="button" class="toolbar-btn" (click)="collapseAll()">Collapse all</button>
       <button type="button" class="toolbar-btn" (click)="expandAllVisible()">Expand all</button>
-      <button type="button" class="toolbar-btn" (click)="collapseAll()">Reset</button>
+      <button type="button" class="toolbar-btn toolbar-btn-light" (click)="resetToRoots()">Reset</button>
       <button *ngIf="searchText.trim()" type="button" class="toolbar-btn toolbar-btn-light" (click)="clearSearch()">
         Clear
       </button>
@@ -40,18 +41,42 @@
     <div *ngIf="visibleRootNodes.length; else noResults" class="tree-list">
       <ng-container *ngTemplateOutlet="treeNodes; context: { $implicit: visibleRootNodes }"></ng-container>
     </div>
+
+    <aside *ngIf="visibleRootNodes.length" class="tree-toc" aria-label="Table of contents">
+      <h2>Contents</h2>
+      <nav>
+        <ul>
+          <li *ngFor="let entry of tocEntries; trackBy: trackTocById">
+            <button type="button" class="toc-link" [class.is-active]="activeTocId === entry.id"
+              [style.paddingLeft.rem]="0.45 + entry.depth * 0.7" (click)="scrollToNode(entry.id)">
+              {{ entry.title }}
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </aside>
   </section>
 </div>
 
 <ng-template #treeNodes let-nodes>
   <ul class="node-group">
-    <li *ngFor="let node of nodes; trackBy: trackNodeById" class="tree-node">
+    <li *ngFor="let node of nodes; trackBy: trackNodeById" class="tree-node" [id]="'tree-node-' + node.category.id"
+      [class.is-active]="activeTocId === node.category.id">
       <div class="category-row">
         <button type="button" class="expand-btn" (click)="toggleNode(node, $event)" [class.is-leaf]="!canExpand(node)"
           [disabled]="!canExpand(node)" [attr.aria-expanded]="isExpanded(node)"
           [attr.aria-label]="isExpanded(node) ? 'Collapse category' : 'Expand category'">
           <span *ngIf="canExpand(node)">{{ isExpanded(node) ? '▾' : '▸' }}</span>
         </button>
+
+        <button *ngIf="hasSubtree(node)" type="button" class="expand-btn subtree-btn"
+          (click)="toggleSubtree(node, $event)" [attr.aria-expanded]="isSubtreeExpanded(node)"
+          [attr.aria-label]="isSubtreeExpanded(node)
+            ? 'Collapse all under ' + node.category.title
+            : 'Expand all under ' + node.category.title">
+          {{ isSubtreeExpanded(node) ? '▾▾' : '▸▸' }}
+        </button>
+        <span *ngIf="!hasSubtree(node)" class="expand-btn-spacer" aria-hidden="true"></span>
 
         <button type="button" class="category-card" (click)="toggleNode(node)">
           <div class="category-copy">

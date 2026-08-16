@@ -6,13 +6,40 @@
     <textarea class="border p-2 rounded resize-none min-h-[80px] dark:bg-gray-800 dark:border-gray-600 dark:text-white"
       placeholder="Description" [(ngModel)]="task.description" name="description"></textarea>
 
-    <select [(ngModel)]="task.categoryId" name="categoryId" placeholder="Select Category"
-      class="border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white">
-      <option [ngValue]="undefined">Select Category</option>
-      <option *ngFor="let category of appService.categories" [ngValue]="category.id">
-        {{ appService.getCategoryPath(category) }}
-      </option>
-    </select>
+    <div class="category-typeahead relative">
+      <div class="relative">
+        <input type="text" name="categoryQuery" [(ngModel)]="categoryQuery" (ngModelChange)="onCategoryQueryChange()"
+          (focus)="openCategoryDropdown()" (keydown)="onCategoryKeydown($event)" placeholder="Select Category"
+          role="combobox" [attr.aria-expanded]="categoryDropdownOpen" aria-autocomplete="list"
+          aria-controls="category-typeahead-list" autocomplete="off"
+          class="w-full border p-2 rounded dark:bg-gray-800 dark:border-gray-600 dark:text-white pr-8" />
+        <button *ngIf="task.categoryId" type="button" (click)="clearCategory($event)"
+          class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-lg leading-none"
+          aria-label="Clear category" title="Clear category">&times;</button>
+      </div>
+      <ul *ngIf="categoryDropdownOpen" id="category-typeahead-list" role="listbox"
+        class="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-xl bg-white dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700 py-1">
+        <li *ngIf="filteredCategories.length === 0" class="px-3 py-2 text-sm text-slate-500 dark:text-slate-400">
+          No matching categories
+        </li>
+        <li *ngFor="let category of filteredCategories; let i = index" role="option"
+          [attr.aria-selected]="i === highlightedIndex"
+          (mousedown)="$event.preventDefault(); $event.stopPropagation(); selectCategory(category)"
+          (mouseenter)="highlightedIndex = i"
+          class="px-3 py-2 text-sm text-slate-700 dark:text-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700"
+          [class.bg-slate-100]="i === highlightedIndex" [class.dark:bg-slate-700]="i === highlightedIndex">
+          {{ categoryOptionLabel(category) }}
+        </li>
+      </ul>
+    </div>
+    <div class="flex justify-between">
+      <label class="flex items-center gap-2 cursor-pointer select-none">
+        <input type="checkbox" class="h-4 w-4 accent-blue-600" [(ngModel)]="appService.leafOnly" name="leafOnly" />
+        <span class="text-sm text-gray-700 dark:text-gray-200">Show only leaf categories</span>
+      </label>
+      <p class="text-sm text-gray-500 dark:text-gray-400">Tasks:
+        {{ appService.categoryTaskMap[task.categoryId ?? 0]?.length ?? 0 }}</p>
+    </div>
 
     <fieldset class="flex flex-col gap-2 border-0 p-0 m-0 min-w-0">
       <legend class="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
@@ -20,13 +47,8 @@
       </legend>
 
       <div class="flex flex-wrap gap-1.5" role="group" aria-label="Days of the week">
-        <button
-          *ngFor="let option of weekDayOptions"
-          type="button"
-          (click)="toggleWeekDay(option.value)"
-          [attr.aria-pressed]="isWeekDaySelected(option.value)"
-          [attr.aria-label]="option.label"
-          [title]="option.label"
+        <button *ngFor="let option of weekDayOptions" type="button" (click)="toggleWeekDay(option.value)"
+          [attr.aria-pressed]="isWeekDaySelected(option.value)" [attr.aria-label]="option.label" [title]="option.label"
           class="inline-flex items-center justify-center min-w-[2.75rem] h-10 px-2 rounded-full text-sm font-semibold border-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
           [ngClass]="isWeekDaySelected(option.value)
             ? 'bg-blue-500 border-blue-500 text-white hover:bg-blue-600'
@@ -66,7 +88,7 @@
     </fieldset>
 
     <label class="flex items-center gap-2 cursor-pointer select-none">
-      <input type="checkbox" class="h-4 w-4 accent-blue-600" [(ngModel)]="autoClear" name="autoClear" />
+      <input type="checkbox" class="h-4 w-4 accent-blue-600" [(ngModel)]="appService.autoClear" name="autoClear" />
       <span class="text-sm text-gray-700 dark:text-gray-200">Auto clear</span>
     </label>
 

@@ -44,6 +44,8 @@ export interface ApiCategory extends BaseProps {
   parentId?: number;
 }
 export interface Category extends ApiCategory {
+  // UI-only (set in app.service)
+  taskCount: number;
 }
 export const INIT_CATEGORY: Category = {
   id: 0,
@@ -52,7 +54,8 @@ export const INIT_CATEGORY: Category = {
   isActive: false,
   createdAt: +new Date(),
   updatedAt: +new Date(),
-  parentId: undefined
+  parentId: undefined,
+  taskCount: 0
 };
 
 export interface ApiMarksObject {

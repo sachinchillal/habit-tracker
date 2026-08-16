@@ -21,6 +21,7 @@ export class AppService {
   marks: ApiMarksObject = {};
   tasksMap: { [key: number]: Task } = {};
   categoriesMap: { [key: number]: Category } = {};
+  categoryTaskMap: { [key: number]: number[] } = {};
 
   eventEmitter = new EventEmitter<AppEventEmitter>();
   /** Fired when tasks or marks are reassigned so views can rebuild derived UI. */
@@ -31,6 +32,8 @@ export class AppService {
   date: string = '';
   time: string = '';
   searchText: string = '';
+  autoClear = true;
+  leafOnly = false;
 
   constructor(private apiService: ApiService, private storeService: StoreService) {
     this.initStore();
@@ -160,7 +163,8 @@ export class AppService {
     this.isLoading = true;
     this.apiService.getCategories().subscribe({
       next: (tasks: any) => {
-        this.saveCategories(tasks.data);
+        this.assignCategories(tasks.data ?? []);
+        this.storeService.saveCategories(this.categories);
         this.isLoading = false;
       },
       error: (error) => {
@@ -169,15 +173,12 @@ export class AppService {
     });
   }
 
-  public saveCategories(categories: Category[]): void {
-    this.assignCategories(categories);
-    this.storeService.saveCategories(this.categories);
-  }
   private assignCategories(categories: Category[]): void {
     this.categories.length = 0; // Clear existing categories
     this.categoriesMap = {}; // Reset the category map
     categories.forEach(c => {
       this.categoriesMap[c.id] = c;
+      c.taskCount = this.categoryTaskMap[c.id]?.length ?? 0;
     });
     // Depth-first tree order so parents appear above their children
     this.categories.push(...this.orderCategoriesAsTree(categories));
@@ -220,6 +221,11 @@ export class AppService {
     }
     return depth;
   }
+
+  isLeafCategory(category: Category): boolean {
+    return !this.categories.some((c) => c.parentId === category.id);
+  }
+
 
   /**
    * Categories that can be chosen as a parent.
@@ -285,7 +291,7 @@ export class AppService {
           ...task,
           categoryName: task.categoryId
             ? this.categoriesMap[task.categoryId]?.title
-            : undefined,
+            : undefined
         }));
         this.saveTasks(_tasks);
         this.isLoading = false;
@@ -309,6 +315,13 @@ export class AppService {
     this.tasks.forEach(task => {
       // Initialize the task map for quick access
       this.tasksMap[task.id] = task;
+      if (task.categoryId) {
+        if (this.categoryTaskMap[task.categoryId]) {
+          this.categoryTaskMap[task.categoryId].push(task.id);
+        } else {
+          this.categoryTaskMap[task.categoryId] = [task.id];
+        }
+      }
     });
     this.buildUIProps();
     this.habitsDataChanged.emit();

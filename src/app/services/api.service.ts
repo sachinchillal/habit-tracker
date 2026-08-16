@@ -84,6 +84,9 @@ export class ApiService {
   markTaskCompletedByTimestamp(id: number, timestamp: number) {
     return this.httpClient.get(API + `task/${id}/mark/${timestamp}`);
   }
+  unmarkTaskCompletedByTimestamp(id: number, timestamp: number) {
+    return this.httpClient.get(API + `task/${id}/unmark/${timestamp}`);
+  }
   getMarks() {
     return this.httpClient.get<{ data: ApiMarksObject }>(API + 'marks');
   }

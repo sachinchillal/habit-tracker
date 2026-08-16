@@ -17,7 +17,7 @@
       placeholder="Description" [(ngModel)]="category.description" name="description"></textarea>
 
     <label class="flex items-center gap-2 cursor-pointer select-none">
-      <input type="checkbox" class="h-4 w-4 accent-blue-600" [(ngModel)]="autoClear" name="autoClear" />
+      <input type="checkbox" class="h-4 w-4 accent-blue-600" [(ngModel)]="appService.autoClear" name="autoClear" />
       <span class="text-sm text-gray-700 dark:text-gray-200">Auto clear</span>
     </label>
 

@@ -11,9 +11,16 @@ interface TreeNodeVm {
   category: Category;
   children: TreeNodeVm[];
   tasks: Task[];
+  depth: number;
   totalTaskCount: number;
   visibleTaskCount: number;
   hasVisibleContent: boolean;
+}
+
+interface TocEntry {
+  id: number;
+  title: string;
+  depth: number;
 }
 
 @Component({
@@ -25,6 +32,7 @@ interface TreeNodeVm {
 })
 export class TreeComponent implements OnInit {
   searchText = '';
+  activeTocId?: number;
   readonly expandedNodeIds = new Set<number>();
   private nodeMap = new Map<number, TreeNodeVm>();
 
@@ -49,6 +57,22 @@ export class TreeComponent implements OnInit {
     return this.rootNodes.filter((node) => node.hasVisibleContent);
   }
 
+  get tocEntries(): TocEntry[] {
+    const entries: TocEntry[] = [];
+    const walk = (nodes: TreeNodeVm[]) => {
+      nodes.forEach((node) => {
+        entries.push({
+          id: node.category.id,
+          title: node.category.title,
+          depth: node.depth,
+        });
+        walk(this.visibleChildren(node));
+      });
+    };
+    walk(this.visibleRootNodes);
+    return entries;
+  }
+
   get totalVisibleTasks(): number {
     return this.appService.tasks.filter((task) => this.matchesTaskSearch(task)).length;
   }
@@ -69,6 +93,10 @@ export class TreeComponent implements OnInit {
     return task.id;
   }
 
+  trackTocById(index: number, entry: TocEntry): number {
+    return entry.id;
+  }
+
   isExpanded(node: TreeNodeVm): boolean {
     return this.expandedNodeIds.has(node.category.id);
   }
@@ -77,11 +105,28 @@ export class TreeComponent implements OnInit {
     return this.visibleChildren(node).length > 0 || this.visibleTasks(node).length > 0;
   }
 
+  hasSubtree(node: TreeNodeVm): boolean {
+    return this.visibleChildren(node).length > 0;
+  }
+
+  isSubtreeExpanded(node: TreeNodeVm): boolean {
+    if (!this.expandedNodeIds.has(node.category.id)) {
+      return false;
+    }
+    return this.visibleChildren(node).every((child) => {
+      if (!this.canExpand(child)) {
+        return true;
+      }
+      return this.isSubtreeExpanded(child);
+    });
+  }
+
   toggleNode(node: TreeNodeVm, event?: Event): void {
     event?.stopPropagation();
     if (!this.canExpand(node)) {
       return;
     }
+    this.activeTocId = node.category.id;
     if (this.expandedNodeIds.has(node.category.id)) {
       this.expandedNodeIds.delete(node.category.id);
       return;
@@ -89,11 +134,28 @@ export class TreeComponent implements OnInit {
     this.expandedNodeIds.add(node.category.id);
   }
 
+  toggleSubtree(node: TreeNodeVm, event?: Event): void {
+    event?.stopPropagation();
+    if (!this.hasSubtree(node)) {
+      return;
+    }
+    this.activeTocId = node.category.id;
+    if (this.isSubtreeExpanded(node)) {
+      this.collapseNodeRecursive(node);
+      return;
+    }
+    this.expandNodeRecursive(node);
+  }
+
   expandAllVisible(): void {
     this.visibleRootNodes.forEach((node) => this.expandNodeRecursive(node));
   }
 
   collapseAll(): void {
+    this.expandedNodeIds.clear();
+  }
+
+  resetToRoots(): void {
     this.expandedNodeIds.clear();
     this.expandRootCategories();
   }
@@ -119,6 +181,21 @@ export class TreeComponent implements OnInit {
 
   categoryPath(category: Category): string {
     return this.appService.getCategoryPath(category);
+  }
+
+  scrollToNode(categoryId: number): void {
+    const node = this.nodeMap.get(categoryId);
+    if (!node) {
+      return;
+    }
+    this.expandAncestors(node.category);
+    this.activeTocId = categoryId;
+    setTimeout(() => {
+      document.getElementById(`tree-node-${categoryId}`)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
   }
 
   handleToggleComplete(taskId: number): void {
@@ -159,8 +236,8 @@ export class TreeComponent implements OnInit {
     });
     byParent.forEach((list) => list.sort((a, b) => a.title.localeCompare(b.title)));
 
-    const buildNode = (category: Category): TreeNodeVm => {
-      const children = (byParent.get(category.id) ?? []).map(buildNode);
+    const buildNode = (category: Category, depth: number): TreeNodeVm => {
+      const children = (byParent.get(category.id) ?? []).map((child) => buildNode(child, depth + 1));
       const tasks = (tasksByCategory.get(category.id) ?? []).sort((a, b) => a.title.localeCompare(b.title));
       const visibleTaskCount = tasks.filter((task) => this.matchesTaskSearch(task)).length;
       const childTaskCount = children.reduce((sum, child) => sum + child.totalTaskCount, 0);
@@ -172,6 +249,7 @@ export class TreeComponent implements OnInit {
         category,
         children,
         tasks,
+        depth,
         totalTaskCount: tasks.length + childTaskCount,
         visibleTaskCount,
         hasVisibleContent,
@@ -180,7 +258,7 @@ export class TreeComponent implements OnInit {
       return node;
     };
 
-    return (byParent.get(null) ?? []).map(buildNode);
+    return (byParent.get(null) ?? []).map((category) => buildNode(category, 0));
   }
 
   private matchesCategorySearch(category: Category): boolean {
@@ -213,6 +291,19 @@ export class TreeComponent implements OnInit {
   private expandNodeRecursive(node: TreeNodeVm): void {
     this.expandedNodeIds.add(node.category.id);
     node.children.forEach((child) => this.expandNodeRecursive(child));
+  }
+
+  private collapseNodeRecursive(node: TreeNodeVm): void {
+    this.expandedNodeIds.delete(node.category.id);
+    node.children.forEach((child) => this.collapseNodeRecursive(child));
+  }
+
+  private expandAncestors(category: Category): void {
+    let current: Category | undefined = category;
+    while (current) {
+      this.expandedNodeIds.add(current.id);
+      current = current.parentId ? this.appService.categoriesMap[current.parentId] : undefined;
+    }
   }
 
   private expandMatchingBranches(node: TreeNodeVm): void {

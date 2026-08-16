@@ -86,27 +86,30 @@
       </button>
     </div>
 
-    <div class="p-5 overflow-y-auto flex-1 min-h-0 space-y-6">
-      <div>
+    <div class="overflow-y-auto flex-1 min-h-0 space-y-6">
+      <!-- <div>
         <div class="text-sm font-semibold text-slate-600 dark:text-slate-300">Description</div>
         <div
           class="mt-2 text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap break-words max-h-[40vh] overflow-auto rounded-xl bg-slate-50 dark:bg-slate-900/40 p-4 border border-slate-200 dark:border-slate-700">
           {{ (task.description) ? task.description : 'No description.' }}
         </div>
-      </div>
+      </div> -->
 
       <div>
-        <div class="text-sm font-semibold text-slate-600 dark:text-slate-300">All fields</div>
         <div
-          class="mt-2 space-y-4 text-sm rounded-xl bg-slate-50 dark:bg-slate-900/40 p-4 border border-slate-200 dark:border-slate-700">
+          class="space-y-4 text-sm rounded-xl bg-slate-50 dark:bg-slate-900/40 p-4 border border-slate-200 dark:border-slate-700">
           <div>
             <div class="text-xs font-semibold text-slate-500 dark:text-slate-400">title</div>
             <div class="mt-0.5 text-slate-800 dark:text-slate-100 break-words">{{ task.title || '—' }}</div>
           </div>
           <div>
             <div class="text-xs font-semibold text-slate-500 dark:text-slate-400">description</div>
-            <div class="mt-0.5 text-slate-800 dark:text-slate-100 whitespace-pre-wrap break-words">{{ (task.description)
-              ? task.description : '—' }}</div>
+            <div *ngIf="task.description; else noDescription"
+              class="markdown-body mt-0.5 text-slate-800 dark:text-slate-100 break-words"
+              [innerHTML]="task.description | markdown"></div>
+            <ng-template #noDescription>
+              <div class="mt-0.5 text-slate-800 dark:text-slate-100">—</div>
+            </ng-template>
           </div>
           <div>
             <div class="text-xs font-semibold text-slate-500 dark:text-slate-400">Category</div>
@@ -140,10 +143,42 @@
     </div>
 
     <div class="flex shrink-0 items-center justify-end gap-2 p-3 border-t border-slate-200/70 dark:border-slate-700/70">
+      <button *ngIf="task.lastUpdatedAt > 0" type="button"
+        class="px-3 py-1 rounded-xl text-sm font-semibold bg-red-100 hover:bg-red-200 dark:bg-red-900/40 dark:hover:bg-red-900/70 text-red-700 dark:text-red-200 transition-colors"
+        (click)="openUnmarkConfirm()">
+        Unmark
+      </button>
       <button type="button"
         class="px-3 py-1 rounded-xl text-sm font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-100 transition-colors"
         (click)="closeDetails()">
         Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Unmark confirmation -->
+<div *ngIf="isUnmarkConfirmOpen" class="fixed inset-0 z-[60] flex items-center justify-center p-4"
+  (click)="closeUnmarkConfirm()" role="dialog" aria-modal="true" aria-labelledby="unmark-confirm-title">
+  <div class="absolute inset-0 bg-black/50 backdrop-blur-[1px]"></div>
+  <div class="relative w-full max-w-sm rounded-2xl bg-white dark:bg-slate-800 shadow-2xl border border-slate-200 dark:border-slate-700 p-5"
+    (click)="$event.stopPropagation()">
+    <h2 id="unmark-confirm-title" class="text-lg font-semibold text-slate-800 dark:text-slate-100">
+      Unmark this task?
+    </h2>
+    <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+      This removes the latest completion for “{{ task.title }}”.
+    </p>
+    <div class="mt-5 flex justify-end gap-2">
+      <button type="button"
+        class="px-3 py-1 rounded-xl text-sm font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-100 transition-colors disabled:opacity-50"
+        [disabled]="isUnmarking" (click)="closeUnmarkConfirm()">
+        Cancel
+      </button>
+      <button type="button"
+        class="px-3 py-1 rounded-xl text-sm font-semibold bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50"
+        [disabled]="isUnmarking" (click)="confirmUnmark()">
+        {{ isUnmarking ? 'Unmarking…' : 'Unmark' }}
       </button>
     </div>
   </div>
