@@ -43,8 +43,7 @@
 
 .tree-header p,
 .category-copy p,
-.empty-state p,
-.task-copy small {
+.empty-state p {
   margin: 0;
   color: #475569;
 }
@@ -81,24 +80,6 @@
   margin-bottom: 0.5rem;
 }
 
-.search-box {
-  flex: 1;
-}
-
-.search-box input {
-  width: 100%;
-  border: 1px solid #dbe4ee;
-  border-radius: 0.6rem;
-  padding: 0.45rem 0.65rem;
-  font: inherit;
-  background: #f8fafc;
-  color: #0f172a;
-}
-
-.search-box input::placeholder {
-  color: #64748b;
-}
-
 .toolbar-actions {
   display: flex;
   gap: 0.35rem;
@@ -130,6 +111,7 @@
 
 .tree-list {
   min-width: 0;
+  overflow-x: auto;
   padding: 0.5rem;
 }
 
@@ -193,11 +175,13 @@
   padding: 0;
   display: grid;
   gap: 0.25rem;
+  min-width: 0;
 }
 
 .tree-node {
   display: grid;
   gap: 0.25rem;
+  min-width: 0;
   scroll-margin-top: 4.75rem;
 }
 
@@ -215,7 +199,6 @@
 
 .expand-btn,
 .subtree-btn,
-.task-row,
 .category-card,
 .toc-link {
   transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
@@ -284,6 +267,9 @@
   margin-bottom: 0;
   font-size: 0.9rem;
   color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .category-copy p {
@@ -307,7 +293,8 @@
 }
 
 .node-content {
-  margin-left: calc(1.5rem + 1.65rem + 0.7rem);
+  min-width: 0;
+  margin-left: 1.15rem;
   padding-left: 0.75rem;
   border-left: 2px solid #cbd5e1;
   display: grid;
@@ -317,65 +304,12 @@
 .task-list {
   display: grid;
   gap: 0.2rem;
-}
-
-.task-row {
-  width: 100%;
-  display: grid;
-  grid-template-columns: 1.15rem minmax(0, 1fr);
-  gap: 0.45rem;
-  align-items: center;
-  border: 1px solid #bbf7d0;
-  border-radius: 0.45rem;
-  padding: 0.3rem 0.5rem;
-  color: #0f172a;
-  text-align: left;
-  cursor: pointer;
-}
-
-.task-row.is-done {
-  background: #dcfce7;
-  border-color: #4ade80;
-}
-
-.task-check {
-  width: 1.1rem;
-  height: 1.1rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  border: 1.5px solid #cbd5e1;
-  color: transparent;
-  font-size: 0.7rem;
-  font-weight: 800;
-}
-
-.task-check.is-done {
-  background: green;
-  color: #fff;
-}
-
-.task-copy {
   min-width: 0;
 }
 
-.task-copy strong,
-.task-copy small {
+.task-list app-checkbox-item {
   display: block;
-}
-
-.task-copy strong {
-  font-size: 0.85rem;
-  color: #0f172a;
-}
-
-.task-copy small {
-  margin-top: 0.05rem;
-  font-size: 0.7rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .empty-state {
@@ -433,8 +367,7 @@
 :host-context(.dark) .tree-list,
 :host-context(.dark) .tree-toc,
 :host-context(.dark) .empty-state,
-:host-context(.dark) .expand-btn,
-:host-context(.dark) .search-box input {
+:host-context(.dark) .expand-btn {
   background: #0f172a;
   border-color: #334155;
   color: #f1f5f9;
@@ -446,11 +379,6 @@
   color: #f1f5f9;
 }
 
-:host-context(.dark) .task-row {
-  border-color: #14532d;
-  color: #f1f5f9;
-}
-
 :host-context(.dark) .node-content {
   border-left-color: #475569;
 }
@@ -458,7 +386,6 @@
 :host-context(.dark) .tree-header h1,
 :host-context(.dark) .empty-state h2,
 :host-context(.dark) .category-copy strong,
-:host-context(.dark) .task-copy strong,
 :host-context(.dark) .stat-chip strong {
   color: #f8fafc;
 }
@@ -484,9 +411,7 @@
 
 :host-context(.dark) .tree-header p,
 :host-context(.dark) .category-copy p,
-:host-context(.dark) .task-copy small,
-:host-context(.dark) .empty-state p,
-:host-context(.dark) .search-box input::placeholder {
+:host-context(.dark) .empty-state p {
   color: #94a3b8;
 }
 
@@ -511,16 +436,4 @@
   background: #1e40af;
   border-color: #60a5fa;
   color: #f8fafc;
-}
-
-:host-context(.dark) .task-row:hover {
-  border-color: #4ade80;
-}
-
-:host-context(.dark) .task-row.is-done {
-  background: #020;
-}
-
-:host-context(.dark) .task-check {
-  border-color: #64748b;
 }

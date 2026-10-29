@@ -5,11 +5,12 @@ import { AppService } from '../../services/app.service';
 import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
 import { ACTIONS, Category } from '../../services/interfaces';
+import { SearchBoxComponent } from '../search-box/search-box.component';
 
 @Component({
   selector: 'app-category-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SearchBoxComponent],
   templateUrl: './category-list.component.html',
   styleUrl: './category-list.component.scss'
 })

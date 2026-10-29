@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { AppService } from '../../services/app.service';
+import { SearchBoxComponent } from '../search-box/search-box.component';
 import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
 import { ACTIONS, Task } from '../../services/interfaces';
@@ -9,7 +9,7 @@ import { ACTIONS, Task } from '../../services/interfaces';
 @Component({
   selector: 'app-task-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, SearchBoxComponent],
   templateUrl: './task-list.component.html',
   styleUrl: './task-list.component.scss'
 })
@@ -73,7 +73,7 @@ export class TaskListComponent {
     this.apiService.pauseTask(task.id).subscribe({
       next: (response) => {
         this.toastService.showToastAuto('Success', 'Task paused successfully.', 'success');
-        this.appService.fetchTrackers();
+        this.appService.fetchTasks();
       },
       error: (error) => {
         if (error.error && error.error.message) {
@@ -88,7 +88,7 @@ export class TaskListComponent {
     this.apiService.resumeTask(task.id).subscribe({
       next: (response) => {
         this.toastService.showToastAuto('Success', 'Task resumed successfully.', 'success');
-        this.appService.fetchTrackers();
+        this.appService.fetchTasks();
       },
       error: (error) => {
         if (error.error && error.error.message) {

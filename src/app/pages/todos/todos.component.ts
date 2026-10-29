@@ -7,6 +7,7 @@ import { ToastService } from '../../services/toast.service';
 import { TOAST_TYPE, Category, ViewMode } from '../../services/interfaces';
 import { CheckboxItemComponent } from '../../components/checkbox-item/checkbox-item.component';
 import { KanbanBoardComponent } from '../../components/kanban-board/kanban-board.component';
+import { SearchBoxComponent } from '../../components/search-box/search-box.component';
 import { ActivatedRoute } from '@angular/router';
 import { StoreService } from '../../services/store.service';
 
@@ -25,7 +26,7 @@ interface QuickSelection {
 @Component({
   selector: 'app-todos',
   standalone: true,
-  imports: [FormsModule, CommonModule, CheckboxItemComponent, KanbanBoardComponent],
+  imports: [FormsModule, CommonModule, CheckboxItemComponent, KanbanBoardComponent, SearchBoxComponent],
   templateUrl: './todos.component.html',
   styleUrl: './todos.component.scss'
 })

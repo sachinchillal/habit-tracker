@@ -26,10 +26,8 @@
       </button>
     </div>
     <div class="flex items-center flex-wrap">
-      <input type="search" class="border dark:border-slate-700 rounded-md p-2" placeholder="Search tasks..."
-        [(ngModel)]="appService.searchText" (ngModelChange)="appService.onSearch()" />
-      <button type="button" class="secondary-btn btn-sm" title="Clear search"
-        (click)="appService.searchText = ''; appService.onSearch();">Clear</button>
+      <app-search-box [value]="appService.searchText"
+        (valueChange)="appService.searchText = $event; appService.onSearch()" placeholder="Search tasks..." />
     </div>
 
 

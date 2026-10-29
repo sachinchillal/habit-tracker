@@ -8,10 +8,8 @@
         <input type="checkbox" class="h-4 w-4 accent-blue-600" [(ngModel)]="appService.leafOnly" name="leafOnly" />
         <span class="text-sm text-gray-700 dark:text-gray-200">Show only leaf categories</span>
       </label>
-      <input type="search" class="border dark:border-slate-700 rounded-md px-2 py-1" placeholder="Search categories..."
-        [(ngModel)]="searchText" (ngModelChange)="onSearch()" />
-      <button type="button" class="secondary-btn btn-sm" title="Clear search"
-        (click)="searchText = ''; onSearch();">Clear</button>
+      <app-search-box [value]="searchText" (valueChange)="searchText = $event; onSearch()"
+        placeholder="Search categories..." />
     </div>
   </div>
   <ul class="space-y-2 overflow-y-auto scrollbar flex-1 min-h-0">

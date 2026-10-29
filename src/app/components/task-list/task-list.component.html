@@ -4,10 +4,8 @@
       <span class="text-xs text-gray-500 ml-2">({{tasks.length}})</span>
     </h2>
     <div class="flex items-center gap-2">
-      <input type="search" class="border dark:border-slate-700 rounded-md px-2 py-1" placeholder="Search tasks..."
-        [(ngModel)]="appService.searchText" (ngModelChange)="onSearch()" />
-      <button type="button" class="secondary-btn btn-sm" title="Clear search"
-        (click)="appService.searchText = '';onSearch();">Clear</button>
+      <app-search-box [value]="appService.searchText" (valueChange)="appService.searchText = $event; onSearch()"
+        placeholder="Search tasks..." />
     </div>
   </div>
   <ul class="space-y-2 overflow-y-auto scrollbar flex-1 min-h-0">

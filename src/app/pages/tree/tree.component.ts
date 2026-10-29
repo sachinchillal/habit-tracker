@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { SearchBoxComponent } from '../../components/search-box/search-box.component';
+import { CheckboxItemComponent } from '../../components/checkbox-item/checkbox-item.component';
 import { ApiService } from '../../services/api.service';
 import { AppService } from '../../services/app.service';
 import { PAGES, TOAST_TYPE, Task, Category } from '../../services/interfaces';
@@ -26,7 +27,7 @@ interface TocEntry {
 @Component({
   selector: 'app-tree',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, CheckboxItemComponent, SearchBoxComponent],
   templateUrl: './tree.component.html',
   styleUrl: './tree.component.scss'
 })
@@ -158,10 +159,6 @@ export class TreeComponent implements OnInit {
   resetToRoots(): void {
     this.expandedNodeIds.clear();
     this.expandRootCategories();
-  }
-
-  clearSearch(): void {
-    this.searchText = '';
   }
 
   onSearchChange(): void {

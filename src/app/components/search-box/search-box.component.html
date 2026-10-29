@@ -1,0 +1,5 @@
+<div class="search-group">
+  <input #searchInput type="search" class="search-input" title="Ctrl+K" [placeholder]="placeholder" [value]="value"
+    (input)="onInput($event)" />
+  <button type="button" class="clear-btn" title="Clear search" aria-label="Clear search" (click)="clear()">&#10060;</button>
+</div>

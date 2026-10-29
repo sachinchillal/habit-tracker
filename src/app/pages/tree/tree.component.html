@@ -22,18 +22,13 @@
   </header>
 
   <section class="toolbar" *ngIf="appService.categories.length">
-    <label class="search-box" for="treeSearch">
-      <input id="treeSearch" type="text" [(ngModel)]="searchText" (ngModelChange)="onSearchChange()"
-        placeholder="Search categories or habits" />
-    </label>
+    <app-search-box variant="toolbar" [value]="searchText" (valueChange)="searchText = $event; onSearchChange()"
+      placeholder="Search categories or habits" />
 
     <div class="toolbar-actions">
       <button type="button" class="toolbar-btn" (click)="collapseAll()">Collapse all</button>
       <button type="button" class="toolbar-btn" (click)="expandAllVisible()">Expand all</button>
       <button type="button" class="toolbar-btn toolbar-btn-light" (click)="resetToRoots()">Reset</button>
-      <button *ngIf="searchText.trim()" type="button" class="toolbar-btn toolbar-btn-light" (click)="clearSearch()">
-        Clear
-      </button>
     </div>
   </section>
 
@@ -93,14 +88,14 @@
 
       <div *ngIf="isExpanded(node) && canExpand(node)" class="node-content">
         <div *ngIf="visibleTasks(node).length" class="task-list">
-          <button *ngFor="let task of visibleTasks(node); trackBy: trackTaskById" type="button" class="task-row"
-            [class.is-done]="task.isDone" (click)="handleToggleComplete(task.id)">
-            <span class="task-check" [class.is-done]="task.isDone">{{ task.isDone ? '✓' : '' }}</span>
-            <span class="task-copy">
-              <strong>{{ task.title }}</strong>
-              <small *ngIf="task.description">{{ task.description }}</small>
-            </span>
-          </button>
+          <app-checkbox-item
+            *ngFor="let task of visibleTasks(node); let index = index; trackBy: trackTaskById"
+            [task]="task"
+            [index]="index"
+            [compact]="true"
+            [isVisibleBorder]="true"
+            (toggleComplete)="handleToggleComplete($event)">
+          </app-checkbox-item>
         </div>
 
         <ng-container *ngIf="visibleChildren(node).length">

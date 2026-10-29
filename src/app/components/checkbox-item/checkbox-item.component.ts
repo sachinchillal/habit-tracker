@@ -17,6 +17,7 @@ export class CheckboxItemComponent {
   @Input() task!: Task;
   @Input() index!: number;
   @Input() isVisibleBorder: boolean = false;
+  @Input() compact = false;
 
   @Output() toggleComplete = new EventEmitter<number>();
 
