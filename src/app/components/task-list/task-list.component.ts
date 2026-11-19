@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, computed, signal, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AppService } from '../../services/app.service';
 import { SearchBoxComponent } from '../search-box/search-box.component';
@@ -14,13 +14,24 @@ import { ACTIONS, Task } from '../../services/interfaces';
   styleUrl: './task-list.component.scss'
 })
 export class TaskListComponent {
-  tasks: Task[] = [];
+  private appliedSearch = signal<string>('');
+
+  tasks = computed(() => {
+    const all = this.appService.tasksOriginal();
+    const searchKey = this.appliedSearch().trim().toLowerCase();
+    if (!searchKey) {
+      return all;
+    }
+    return all.filter(task =>
+      task.title.toLowerCase().includes(searchKey) ||
+      !!task.description?.toLowerCase().includes(searchKey) ||
+      !!task.categoryName?.toLowerCase().includes(searchKey)
+    );
+  });
+
 
   constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService) { }
 
-  ngOnInit() {
-    this.tasks = this.appService.tasksOriginal;
-  }
 
   private timeoutId: any;
   onSearch() {
@@ -34,14 +45,9 @@ export class TaskListComponent {
   }
 
   private applySearchFilter() {
-    this.tasks = this.appService.searchText.trim() === '' ? this.appService.tasksOriginal :
-      this.appService.tasksOriginal.filter(task => {
-        const searchKey = this.appService.searchText.toLowerCase();
-        return task.title.toLowerCase().includes(searchKey) ||
-          (task.description && task.description.toLowerCase().includes(searchKey)) ||
-          (task.categoryName && task.categoryName.toLowerCase().includes(searchKey));
-      });
+    this.appliedSearch.set(this.appService.searchText);
   }
+
   /**
    * trackBy function for ngFor to improve performance.
    * @param index - The index of the item.

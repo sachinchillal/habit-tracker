@@ -1,8 +1,7 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, computed, Signal } from '@angular/core';
 import { AppService } from '../../services/app.service';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
 import { DayInfo, INIT_DAY_INFO, Task } from '../../services/interfaces';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -19,36 +18,17 @@ interface TaskWithDayInfo extends Task {
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
-export class HomeComponent implements OnInit, OnDestroy {
+export class HomeComponent {
   // Define the number of days to display in the grid
   readonly daysToShow = 7 * 3; // 5 weeks
-  readonly tasks: TaskWithDayInfo[] = [];
-
-  private habitsSub?: Subscription;
+  readonly tasks: Signal<TaskWithDayInfo[]> = computed(() => this.appService._tasks().map(task => ({
+    ...task,
+    dayInfo: this.buildDaysList(this.appService.marks[task.id] ?? []),
+    streaks: this.computeStreaks(this.appService.marks[task.id] ?? []),
+  })));
 
   constructor(public appService: AppService, private activatedRoute: ActivatedRoute) {
     this.appService.setCurrentPage(this.activatedRoute.snapshot.data['page']);
-  }
-
-  ngOnInit(): void {
-    this.rebuildView();
-    this.habitsSub = this.appService.habitsDataChanged.subscribe(() => this.rebuildView());
-  }
-
-  ngOnDestroy(): void {
-    this.habitsSub?.unsubscribe();
-  }
-
-  private rebuildView(): void {
-    this.tasks.length = 0;
-    for (const task of this.appService.tasks) {
-      const timestamps = this.appService.marks[task.id] ?? [];
-      this.tasks.push({
-        ...task,
-        dayInfo: this.buildDaysList(timestamps),
-        streaks: this.computeStreaks(timestamps),
-      });
-    }
   }
 
   private buildDaysList(timestamps: number[]): DayInfo[] {

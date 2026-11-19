@@ -29,7 +29,9 @@
         {{ c.description }}
       </p>
       <div class="flex gap-2 items-center">
-        <div class="text-xs text-gray-500">{{c.id | date:'medium'}}</div>
+        <div class="text-xs text-gray-500">
+          {{c.id | date:'medium'}} | tasks: {{ c.taskCount }}
+        </div>
         <i class="ms-auto"></i>
         <button title="Add child category" aria-label="Add child category" (click)="handleAddChild(c)"
           class="p-1 px-2 hover:bg-emerald-900 rounded text-sm font-medium text-emerald-700 dark:text-emerald-300">

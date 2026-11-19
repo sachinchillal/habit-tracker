@@ -2,6 +2,8 @@
 
 A simple habit tracker application. To track progress, stay motivated with streaks, and achieve goals.
 
+Notable changes are recorded in the [changelog](CHANGELOG.md).
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.
 
 ## Development server

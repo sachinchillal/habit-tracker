@@ -78,11 +78,13 @@ export class ApiService {
     return this.httpClient.delete(API + `task/${id}`);
   }
 
-  markTaskCompleted(id: number) {
-    return this.httpClient.get(API + `task/${id}/mark`);
+  markTaskCompleted(id: number, multiple = false) {
+    const options = multiple ? { params: { multiple: 'true' } } : {};
+    return this.httpClient.get(API + `task/${id}/mark`, options);
   }
-  markTaskCompletedByTimestamp(id: number, timestamp: number) {
-    return this.httpClient.get(API + `task/${id}/mark/${timestamp}`);
+  markTaskCompletedByTimestamp(id: number, timestamp: number, multiple = false) {
+    const options = multiple ? { params: { multiple: 'true' } } : {};
+    return this.httpClient.get(API + `task/${id}/mark/${timestamp}`, options);
   }
   unmarkTaskCompletedByTimestamp(id: number, timestamp: number) {
     return this.httpClient.get(API + `task/${id}/unmark/${timestamp}`);

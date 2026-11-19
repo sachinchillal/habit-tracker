@@ -24,6 +24,7 @@ export class CheckboxItemComponent {
   isDetailsOpen = false;
   isUnmarkConfirmOpen = false;
   isUnmarking = false;
+  isMarkingAgain = false;
 
   constructor(
     private apiService: ApiService,
@@ -43,6 +44,36 @@ export class CheckboxItemComponent {
   closeDetails() {
     this.closeUnmarkConfirm();
     this.isDetailsOpen = false;
+  }
+
+  markAgain() {
+    if (this.isMarkingAgain) {
+      return;
+    }
+    this.isMarkingAgain = true;
+    this.appService.isLoading = true;
+    let timestamp = 0;
+    if (this.appService.date && this.appService.time) {
+      timestamp = new Date(this.appService.date + ' ' + this.appService.time).getTime();
+    }
+    const apiCall = timestamp > 0
+      ? this.apiService.markTaskCompletedByTimestamp(this.task.id, timestamp, true)
+      : this.apiService.markTaskCompleted(this.task.id, true);
+    apiCall.subscribe({
+      next: () => {
+        this.isMarkingAgain = false;
+        this.appService.fetchTrackers();
+      },
+      error: (error) => {
+        this.isMarkingAgain = false;
+        this.appService.isLoading = false;
+        if (error.error && error.error.message) {
+          this.toastService.showToastAuto('Error', error.error.message, TOAST_TYPE.ERROR);
+        } else {
+          this.toastService.showToastAuto('Error', 'An unknown error occurred.', TOAST_TYPE.ERROR);
+        }
+      }
+    });
   }
 
   openUnmarkConfirm() {

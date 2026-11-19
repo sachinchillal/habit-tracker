@@ -1,7 +1,7 @@
 <div class="flex flex-col h-full">
   <div class="flex items-center justify-between gap-4 mb-4 shrink-0 flex-wrap">
     <h2 class="text-xl font-bold">Tasks
-      <span class="text-xs text-gray-500 ml-2">({{tasks.length}})</span>
+      <span class="text-xs text-gray-500 ml-2">({{tasks().length}})</span>
     </h2>
     <div class="flex items-center gap-2">
       <app-search-box [value]="appService.searchText" (valueChange)="appService.searchText = $event; onSearch()"
@@ -9,7 +9,7 @@
     </div>
   </div>
   <ul class="space-y-2 overflow-y-auto scrollbar flex-1 min-h-0">
-    <li *ngFor="let t of tasks; let index=index; trackBy: trackCategoryById"
+    <li *ngFor="let t of tasks(); let index=index; trackBy: trackCategoryById"
       class="relative rounded shadow p-2 border border-gray-200 dark:border-gray-700">
       <div class="mb-2">{{t.title}}</div>
       <div class="mb-2 text-gray-400">{{t.description}}</div>

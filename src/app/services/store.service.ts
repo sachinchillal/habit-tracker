@@ -73,8 +73,18 @@ export class StoreService {
   }
 
   private getJSON<T>(key: string, fallback: T): T {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : fallback;
+    try {
+      const data = localStorage.getItem(key);
+      if (!data) return fallback;
+      return JSON.parse(data) as T;
+    } catch {
+      try {
+        localStorage.removeItem(key);
+      } catch {
+        // ignore storage errors
+      }
+      return fallback;
+    }
   }
 
   private setJSON(key: string, value: unknown): void {

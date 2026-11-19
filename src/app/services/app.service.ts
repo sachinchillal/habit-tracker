@@ -1,11 +1,22 @@
-import { EventEmitter, Injectable } from '@angular/core';
+import { EventEmitter, Injectable, Signal, signal, WritableSignal } from '@angular/core';
 import { ACTIONS, ApiMarksObject, ApiTask, INIT_TASK, PAGES, Task, Category } from './interfaces';
 import { ApiService } from './api.service';
 import { StoreService } from './store.service';
+import { orderCategoriesAsTree } from '../utils/category.util';
 
 interface AppEventEmitter {
   action: ACTIONS,
   data: Task | Category | Partial<Category>
+}
+
+export enum STATE_ACTIONS {
+  CATEGORIES_CHANGED = 'CATEGORIES_CHANGED',
+  TASKS_CHANGED = 'TASKS_CHANGED',
+  MARKS_CHANGED = 'MARKS_CHANGED',
+}
+
+interface StateChange {
+  action: STATE_ACTIONS
 }
 
 @Injectable({
@@ -15,17 +26,18 @@ export class AppService {
   isLoading: boolean = false;
 
   readonly categories: Category[] = [];
+  readonly _tasks = signal<Task[]>([]);
   readonly tasks: Task[] = [];
-  readonly tasksOriginal: Task[] = [];
+  readonly tasksOriginal = signal<Task[]>([]);
   noOfTasksDone: number = 0;
   marks: ApiMarksObject = {};
   tasksMap: { [key: number]: Task } = {};
   categoriesMap: { [key: number]: Category } = {};
   categoryTaskMap: { [key: number]: number[] } = {};
 
-  eventEmitter = new EventEmitter<AppEventEmitter>();
+  readonly eventEmitter = new EventEmitter<AppEventEmitter>();
   /** Fired when tasks or marks are reassigned so views can rebuild derived UI. */
-  habitsDataChanged = new EventEmitter<void>();
+  private readonly eventEmitterStateChanges = new EventEmitter<StateChange>();
 
   currentPage: PAGES = PAGES.HOME;
 
@@ -37,20 +49,49 @@ export class AppService {
 
   constructor(private apiService: ApiService, private storeService: StoreService) {
     this.initStore();
+    this.initStateChanges();
+  }
+  private initStateChanges() {
+    this.eventEmitterStateChanges.subscribe((stateChange) => {
+      switch (stateChange.action) {
+        case STATE_ACTIONS.CATEGORIES_CHANGED:
+          this.initCategories();
+          break;
+        case STATE_ACTIONS.TASKS_CHANGED:
+          this.initTasks();
+          break;
+        case STATE_ACTIONS.MARKS_CHANGED:
+          this.initMarks();
+          break;
+        default:
+          console.warn('No state change found for', stateChange.action);
+          break;
+      }
+    });
   }
   private initStore() {
+    this.initCategories();
+    this.initTasks();
+    this.initMarks();
+  }
+  private initCategories() {
     const categories = this.storeService.getCategories();
     if (categories && categories.length > 0) {
       this.assignCategories(categories);
     } else {
       this.fetchCategories();
     }
+  }
+  private initTasks() {
     const tasks = this.storeService.getTasks();
     if (tasks && tasks.length > 0) {
       this.assignTasks(tasks);
+      this._tasks.set(tasks);
     } else {
       this.fetchTasks();
     }
+  }
+  private initMarks() {
     const marks = this.storeService.getMarks();
     if (marks && Object.keys(marks).length > 0) {
       this.assignMarks(marks);
@@ -91,6 +132,7 @@ export class AppService {
     // fetchTrackers
     switch (this.currentPage) {
       case PAGES.HOME:
+        this.fetchTasks();
         this.fetchTrackers();
         break;
       case PAGES.CREATE_HABIT:
@@ -98,6 +140,7 @@ export class AppService {
         break;
       case PAGES.TODOS:
         this.fetchTasks();
+        this.fetchTrackers();
         break;
       case PAGES.GROUPED_TODOS:
         this.fetchTasks();
@@ -119,10 +162,10 @@ export class AppService {
     // Implement search logic here
     this.tasks.length = 0;
     if (this.searchText.trim() === '') {
-      this.tasks.push(...this.tasksOriginal);
+      this.tasks.push(...this.tasksOriginal());
     } else {
       const searchLower = this.searchText.toLowerCase();
-      const filteredTasks = this.tasksOriginal.filter(task =>
+      const filteredTasks = this.tasksOriginal().filter(task =>
         task.title.toLowerCase().includes(searchLower) ||
         (task.description && task.description.toLowerCase().includes(searchLower))
       );
@@ -136,25 +179,25 @@ export class AppService {
   }
   private rearrangeTasksForPageTodos() {
     // First rearrange tasksOriginal
-    const todoTasksOriginal = this.tasksOriginal.filter(task => !task.isDone);
-    const combinedTasksOriginal = todoTasksOriginal.concat(this.tasksOriginal.filter(task => task.isDone)).filter(t => !t.isPaused);
+    const todoTasksOriginal = this.tasksOriginal().filter(task => !task.isDone);
+    const combinedTasksOriginal = todoTasksOriginal.concat(this.tasksOriginal().filter(task => task.isDone)).filter(t => !t.isPaused);
     combinedTasksOriginal.sort((a, b) => (a.lastUpdatedAt - b.lastUpdatedAt));
-    this.tasksOriginal.length = 0;
-    this.tasksOriginal.push(...combinedTasksOriginal);
+    // this.tasksOriginal.length = 0;
+    // this.tasksOriginal.push(...combinedTasksOriginal);
 
     // Then apply search filter if active, otherwise use all tasksOriginal
     if (this.searchText.trim() !== '') {
       this.applySearchFilter();
     } else {
       this.tasks.length = 0;
-      this.tasks.push(...this.tasksOriginal);
+      this.tasks.push(...combinedTasksOriginal);
     }
   }
   private rearrangeTasksForPageHabitList() {
     // show all tasks
     this.tasks.sort((a, b) => a.id - b.id);
 
-    this.tasksOriginal.sort((a, b) => a.id - b.id);
+    this.tasksOriginal().sort((a, b) => a.id - b.id);
   }
 
 
@@ -162,9 +205,12 @@ export class AppService {
   public fetchCategories() {
     this.isLoading = true;
     this.apiService.getCategories().subscribe({
-      next: (tasks: any) => {
-        this.assignCategories(tasks.data ?? []);
-        this.storeService.saveCategories(this.categories);
+      next: (res: any) => {
+        const categories: Category[] = res.data ?? [];
+        this.storeService.saveCategories(categories);
+        if (categories.length > 0) {
+          this.eventEmitterStateChanges.emit({ action: STATE_ACTIONS.CATEGORIES_CHANGED });
+        }
         this.isLoading = false;
       },
       error: (error) => {
@@ -181,7 +227,7 @@ export class AppService {
       c.taskCount = this.categoryTaskMap[c.id]?.length ?? 0;
     });
     // Depth-first tree order so parents appear above their children
-    this.categories.push(...this.orderCategoriesAsTree(categories));
+    this.categories.push(...orderCategoriesAsTree(categories));
   }
 
   /** Full ancestry path including the category itself, e.g. "Sports › Running › Tempo". */
@@ -246,40 +292,9 @@ export class AppService {
         }
       }
     }
-    return this.orderCategoriesAsTree(this.categories.filter(c => !excluded.has(c.id)));
+    return orderCategoriesAsTree(this.categories.filter(c => !excluded.has(c.id)));
   }
 
-  private orderCategoriesAsTree(categories: Category[]): Category[] {
-    const byParent = new Map<number | null, Category[]>();
-    for (const c of categories) {
-      const key = c.parentId ?? null;
-      const group = byParent.get(key) ?? [];
-      group.push(c);
-      byParent.set(key, group);
-    }
-    for (const group of byParent.values()) {
-      group.sort((a, b) => a.title.localeCompare(b.title));
-    }
-    const result: Category[] = [];
-    const visit = (parentId: number | null) => {
-      const children = byParent.get(parentId) ?? [];
-      for (const child of children) {
-        result.push(child);
-        visit(child.id);
-      }
-    };
-    visit(null);
-    // Orphans whose parent is missing from the list
-    if (result.length < categories.length) {
-      const seen = new Set(result.map(c => c.id));
-      for (const c of categories) {
-        if (!seen.has(c.id)) {
-          result.push(c);
-        }
-      }
-    }
-    return result;
-  }
   // TASKS
   public fetchTasks() {
     this.isLoading = true;
@@ -293,7 +308,10 @@ export class AppService {
             ? this.categoriesMap[task.categoryId]?.title
             : undefined
         }));
-        this.saveTasks(_tasks);
+        this.storeService.saveTasks(_tasks);
+        if (_tasks.length > 0) {
+          this.eventEmitterStateChanges.emit({ action: STATE_ACTIONS.TASKS_CHANGED });
+        }
         this.isLoading = false;
       },
       error: () => {
@@ -302,16 +320,12 @@ export class AppService {
     });
   }
 
-  public saveTasks(tasks: Task[]): void {
-    this.assignTasks(tasks);
-    this.storeService.saveTasks(this.tasks);
-  }
   private assignTasks(tasks: Task[]): void {
     this.tasks.length = 0; // Clear existing tasks
     this.tasks.push(...tasks);
-    this.tasksOriginal.length = 0; // Clear existing original tasks
-    this.tasksOriginal.push(...tasks);
+    this.tasksOriginal.set(tasks);
     this.tasksMap = {}; // Reset the task map
+    this.categoryTaskMap = {}; // Reset the category task map
     this.tasks.forEach(task => {
       // Initialize the task map for quick access
       this.tasksMap[task.id] = task;
@@ -323,16 +337,21 @@ export class AppService {
         }
       }
     });
+    this.categories.forEach(c => {
+      c.taskCount = this.categoryTaskMap[c.id]?.length ?? 0;
+    });
     this.buildUIProps();
-    this.habitsDataChanged.emit();
   }
   //  MARKS
   public fetchTrackers() {
     this.isLoading = true;
     this.apiService.getMarks().subscribe({
       next: (res) => {
-        this.saveMarks(res.data ?? {});
-        this.setCurrentPage(this.currentPage); // to rearrange tasks if on todos page
+        const marks: ApiMarksObject = res.data ?? {};
+        this.storeService.saveMarks(marks);
+        if (Object.keys(marks).length > 0) {
+          this.eventEmitterStateChanges.emit({ action: STATE_ACTIONS.MARKS_CHANGED });
+        }
         this.isLoading = false;
       },
       error: (error) => {
@@ -341,14 +360,9 @@ export class AppService {
       }
     });
   }
-  public saveMarks(marks: ApiMarksObject): void {
-    this.assignMarks(marks);
-    this.storeService.saveMarks(this.marks);
-  }
   private assignMarks(marks: ApiMarksObject): void {
     this.marks = marks ?? {};
     this.buildUIProps();
-    this.habitsDataChanged.emit();
   }
   // UI Properties
   private buildUIProps() {
@@ -356,7 +370,7 @@ export class AppService {
   }
   private buildUIPropsForTasks() {
     // Update tasksOriginal to ensure all tasks are updated, not just filtered ones
-    this.tasksOriginal.forEach(task => {
+    this.tasksOriginal().forEach(task => {
       const timestamps = this.marks[task.id];
       if (timestamps && timestamps.length > 0) {
         const lastTs = Math.max(...timestamps);
@@ -391,7 +405,7 @@ export class AppService {
       }
     });
     // Calculate noOfTasksDone from tasksOriginal to get accurate count
-    this.noOfTasksDone = this.tasksOriginal.filter(t => t.isDone).length;
+    this.noOfTasksDone = this.tasksOriginal().filter(t => t.isDone).length;
 
     // Re-apply search filter immediately if there's an active search
     if (this.searchText.trim() !== '') {
