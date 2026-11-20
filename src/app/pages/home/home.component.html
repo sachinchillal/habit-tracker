@@ -1,3 +1,15 @@
+@if (tasks().length === 0 && !appService.isLoading) {
+<!-- Empty state: shown until the first habit exists -->
+<section
+  class="max-w-xl mx-auto mt-8 sm:mt-16 p-8 text-center bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+  <img src="addhuri-habit-tracker-logo.svg" alt="" width="48" height="48" class="h-12 w-12 mx-auto mb-4">
+  <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Start your first habit</h2>
+  <p class="mt-2 mb-6 text-slate-600 dark:text-slate-400">
+    Add a habit, then check it off each day to build a streak.
+  </p>
+  <a routerLink="/create" class="primary-btn">Create habit</a>
+</section>
+} @else {
 <!-- Legend for colors -->
 <div class="flex justify-center items-center flex-wrap gap-4 mb-8 p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
   <h3 class="text-lg font-semibold mr-4">Legend:</h3>
@@ -57,3 +69,4 @@ transition-all hover:shadow-2xl hover:-translate-y-1">
   </div>
   }
 </main>
+}

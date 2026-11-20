@@ -21,7 +21,7 @@ interface NavLink {
 })
 export class HeaderComponent {
   readonly appTitle = environment.appTitle;
-  readonly logoSrc = 'android-chrome-192x192.png';
+  readonly logoSrc = 'addhuri-habit-tracker-logo.svg';
 
   showSettingsModal = false;
   mobileMenuOpen = false;
@@ -29,7 +29,7 @@ export class HeaderComponent {
 
   /** High-traffic routes shown inline on desktop */
   readonly primaryLinks: NavLink[] = [
-    { path: '/home', label: 'Dashboard' },
+    { path: '/dashboard', label: 'Dashboard' },
     { path: '/todos', label: 'ToDos' },
     { path: '/create', label: 'Create Habit' },
     { path: '/category', label: 'Categories' },
@@ -98,7 +98,7 @@ export class HeaderComponent {
   }
 
   isExactHome(path: string): boolean {
-    return path === '/home';
+    return path === '/dashboard';
   }
 
   onRefresh(): void {

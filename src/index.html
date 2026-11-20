@@ -3,18 +3,91 @@
 
 <head>
   <meta charset="utf-8">
-  <title>HabitTracker</title>
+  <title>Habit Tracker – Daily habits, to-dos and streaks | Addhuri</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Build better routines with Addhuri Habit Tracker. Check off daily habits and to-dos, track current and longest streaks, and organize habits by category.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="https://addhuri.com/habit-tracker/">
+
+  <meta name="application-name" content="Habit Tracker">
+  <meta name="apple-mobile-web-app-title" content="Habits">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#020617" media="(prefers-color-scheme: dark)">
+
+  <!--
+    Apply the saved theme before the first paint so dark mode doesn't flash white.
+    Keep in sync with ThemeService.apply(); the storage key is
+    environment.localStorageKey + 'ThemeType' (see StoreService).
+  -->
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('habitTrackerThemeType');
+        var dark = saved === 'dark' ||
+          (saved !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        var root = document.documentElement;
+        root.classList.add(dark ? 'dark' : 'light');
+        root.dataset.theme = dark ? 'dark' : 'light';
+        root.style.colorScheme = dark ? 'dark' : 'light';
+        var metas = document.querySelectorAll('meta[name="theme-color"]');
+        for (var i = 0; i < metas.length; i++) {
+          metas[i].setAttribute('content', dark ? '#020617' : '#ffffff');
+        }
+      } catch (e) { }
+    })();
+  </script>
+
+  <link rel="icon" href="favicon.ico" sizes="32x32">
+  <link rel="icon" href="addhuri-habit-tracker-logo.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="manifest" href="site.webmanifest">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Addhuri">
+  <meta property="og:title" content="Addhuri Habit Tracker – Daily habits, to-dos and streaks">
+  <meta property="og:description"
+    content="Check off daily habits and to-dos, track current and longest streaks, and organize habits by category.">
+  <meta property="og:url" content="https://addhuri.com/habit-tracker/">
+  <meta property="og:image" content="https://addhuri.com/habit-tracker/addhuri-habit-tracker-og.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Addhuri Habit Tracker: daily habits, to-dos and streaks">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image:alt" content="Addhuri Habit Tracker: daily habits, to-dos and streaks">
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Habit Tracker",
+      "alternateName": "Addhuri Habit Tracker",
+      "url": "https://addhuri.com/habit-tracker/",
+      "description": "Build better routines with Addhuri Habit Tracker. Check off daily habits and to-dos, track current and longest streaks, and organize habits by category.",
+      "applicationCategory": "LifestyleApplication",
+      "operatingSystem": "Any",
+      "browserRequirements": "Requires JavaScript",
+      "image": "https://addhuri.com/habit-tracker/addhuri-habit-tracker-og.png",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Addhuri",
+        "url": "https://addhuri.com/"
+      }
+    }
+  </script>
 </head>
 
 <body class="text-black bg-white dark:text-white dark:bg-black">
   <app-root></app-root>
+  <noscript>
+    <h1>Habit Tracker</h1>
+    <p>Build better routines with Addhuri Habit Tracker. Check off daily habits and to-dos, track current and longest
+      streaks, and organize habits by category.</p>
+    <p>Enable JavaScript to use Habit Tracker.</p>
+  </noscript>
 </body>
 
 </html>

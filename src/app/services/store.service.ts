@@ -7,6 +7,8 @@ const CATEGORIES_KEY = LOCAL_STORAGE_KEY + 'Categories';
 const TASKS_KEY = LOCAL_STORAGE_KEY + 'Tasks';
 const MARKS_KEY = LOCAL_STORAGE_KEY + 'Marks';
 const TODOS_VIEW_KEY = LOCAL_STORAGE_KEY + 'TodosView';
+// Also read before Angular boots by the inline theme script in src/index.html
+// ('habitTrackerThemeType'); update that script if this key changes.
 const THEME_TYPE_KEY = LOCAL_STORAGE_KEY + 'ThemeType';
 
 @Injectable({

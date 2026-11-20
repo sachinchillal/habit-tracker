@@ -1,7 +1,7 @@
 import { Component, computed, Signal } from '@angular/core';
 import { AppService } from '../../services/app.service';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { DayInfo, INIT_DAY_INFO, Task } from '../../services/interfaces';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -14,7 +14,7 @@ interface TaskWithDayInfo extends Task {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })

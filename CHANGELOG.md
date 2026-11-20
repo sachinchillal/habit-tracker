@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Public landing page** (2026-11-21) — intro at `/` covering daily check-ins, streaks, and categories. The dashboard shows an empty state until the first habit exists.
+- **Search metadata** (2026-11-20) — branded page titles, description, Open Graph and Twitter cards, JSON-LD, a canonical URL, and a sitemap. Only the landing page is indexable; habit pages stay `noindex`.
+- **App icons and shortcuts** (2026-11-20) — Addhuri logo, maskable icon, and install shortcuts for ToDos and Create Habit.
+- **Mark again** (`aef161f`, 2026-11-19) — mark a habit another time for the chosen date and time.
 - **Search box** (`7bcca14`, 2026-10-29) — shared search input for tasks and categories; environment files kept out of git.
 - **Markdown and safer unmark** (`bd47691`, 2026-08-16) — Markdown task descriptions, category search and filter, confirm before unmarking, table of contents on the tree view.
 - **Local storage** (`3f32e6d`, 2026-08-16) — `StoreService` keeps categories, tasks, marks, theme, and todos view in the browser.
@@ -17,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Routes** (2026-11-20) — the dashboard moved from `/home` to `/dashboard` (`/home` still redirects). Unknown paths go to the landing page, and the header logo links home.
+- **Theme** (2026-11-20) — Auto follows the system as it changes, the browser theme color updates with the mode, and the saved theme is applied before the first paint.
+- **Task views** (`aef161f`, 2026-11-19) — the dashboard and task list follow live task data. Each category shows how many tasks it has, and unreadable local storage is cleared instead of breaking the app.
 - **Home backed by the API** (`de37a33`, 2026-08-07) — home loads habits from the API instead of only local state.
 - **Typed API tasks** (`d259827`, 2026-07-18) — tasks from the API mapped into the app model, including category name.
 - **Parent categories** (`7989e9c`, 2026-07-18) — parent on create, add-child from the list.
