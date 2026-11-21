@@ -9,9 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Sign in with SSO** (2026-11-21) — every page except the landing page needs a signed-in account. Signed-out users get a sign-in page that hands over to SSO and returns them to the page they opened. The header shows an account menu with Sign out, the session is checked with the API, and signing in or out in another tab updates open tabs. Local development proxies `/sso` to the SSO dev server.
 - **Public landing page** (2026-11-21) — intro at `/` covering daily check-ins, streaks, and categories. The dashboard shows an empty state until the first habit exists.
 - **Search metadata** (2026-11-20) — branded page titles, description, Open Graph and Twitter cards, JSON-LD, a canonical URL, and a sitemap. Only the landing page is indexable; habit pages stay `noindex`.
-- **App icons and shortcuts** (2026-11-20) — Addhuri logo, maskable icon, and install shortcuts for ToDos and Create Habit.
+- **App icons and shortcuts** (2026-11-20) — Habit Tracker logo, maskable icon, and install shortcuts for ToDos and Create Habit.
 - **Mark again** (`aef161f`, 2026-11-19) — mark a habit another time for the chosen date and time.
 - **Search box** (`7bcca14`, 2026-10-29) — shared search input for tasks and categories; environment files kept out of git.
 - **Markdown and safer unmark** (`bd47691`, 2026-08-16) — Markdown task descriptions, category search and filter, confirm before unmarking, table of contents on the tree view.

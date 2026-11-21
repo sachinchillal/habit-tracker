@@ -26,7 +26,8 @@
         appTitle }}</span>
     </a>
 
-    <!-- Desktop primary nav -->
+    <!-- Desktop primary nav (signed-in only) -->
+    @if (auth.isAuthenticated()) {
     <nav class="hidden md:flex items-center gap-0.5 ml-4" aria-label="Main">
       <a *ngFor="let nav of primaryLinks" [routerLink]="nav.path" routerLinkActive="header-nav-active"
         [routerLinkActiveOptions]="{ exact: isExactHome(nav.path) }"
@@ -62,11 +63,13 @@
         }
       </div>
     </nav>
+    }
 
     <div class="flex-1"></div>
 
     <!-- Actions -->
     <div class="flex items-center gap-0.5 shrink-0">
+      @if (auth.isAuthenticated()) {
       <button type="button"
         class="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 transition-colors flex items-center justify-center shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
         (click)="onRefresh()" [disabled]="appService.isLoading" title="Refresh" aria-label="Refresh data">
@@ -78,6 +81,7 @@
       </button>
 
       <span class="hidden sm:block w-px h-5 mx-1 bg-slate-200 dark:bg-slate-700" aria-hidden="true"></span>
+      }
 
       <button type="button"
         class="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 transition-colors flex items-center justify-center shrink-0"
@@ -89,6 +93,39 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
       </button>
+
+      @if (auth.isAuthenticated()) {
+      <!-- Account menu -->
+      <div class="header-account relative ml-1">
+        <button type="button"
+          class="h-8 w-8 rounded-full bg-blue-500 text-white text-sm font-semibold flex items-center justify-center hover:bg-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 transition-colors cursor-pointer border-0"
+          (click)="toggleAccountMenu(); $event.stopPropagation()" [attr.aria-expanded]="accountMenuOpen"
+          aria-haspopup="true" aria-controls="header-account-menu" [attr.aria-label]="'Account: ' + auth.displayName()"
+          [title]="auth.displayName()">
+          {{ auth.initials() }}
+        </button>
+
+        @if (accountMenuOpen) {
+        <div id="header-account-menu"
+          class="absolute top-full right-0 mt-1.5 min-w-[14rem] py-1.5 z-50 rounded-xl bg-white dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden"
+          role="menu" aria-label="Account">
+          <div class="px-4 py-2.5 border-b border-slate-200 dark:border-slate-700">
+            <p class="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{{ auth.displayName() }}</p>
+            @if (auth.email() && auth.email() !== auth.displayName()) {
+            <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ auth.email() }}</p>
+            }
+          </div>
+          <button type="button" role="menuitem"
+            class="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 focus-visible:outline-none focus-visible:bg-slate-100 dark:focus-visible:bg-slate-700 transition-colors cursor-pointer border-0 bg-transparent"
+            (click)="signOut()">
+            Sign out
+          </button>
+        </div>
+        }
+      </div>
+      } @else {
+      <a routerLink="/login" class="primary-btn btn-sm ml-1 no-underline whitespace-nowrap">Sign in</a>
+      }
     </div>
   </div>
 </header>
@@ -103,6 +140,18 @@
     <div class="flex items-center gap-2.5 px-4 h-14 shrink-0 border-b border-slate-200 dark:border-slate-800">
       <img [src]="logoSrc" alt="" width="32" height="32" class="h-8 w-8 rounded-lg object-contain shrink-0" />
       <span class="text-base font-semibold tracking-tight text-slate-900 dark:text-slate-100">{{ appTitle }}</span>
+    </div>
+
+    @if (auth.isAuthenticated()) {
+    <div class="flex items-center gap-3 px-4 py-3 border-b border-slate-200 dark:border-slate-800">
+      <span class="h-9 w-9 shrink-0 rounded-full bg-blue-500 text-white text-sm font-semibold flex items-center justify-center"
+        aria-hidden="true">{{ auth.initials() }}</span>
+      <div class="min-w-0">
+        <p class="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{{ auth.displayName() }}</p>
+        @if (auth.email() && auth.email() !== auth.displayName()) {
+        <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ auth.email() }}</p>
+        }
+      </div>
     </div>
 
     <nav class="flex flex-col py-3 px-2" aria-label="Main">
@@ -123,6 +172,20 @@
         {{ nav.label }}
       </a>
     </nav>
+
+    <div class="mt-auto px-2 py-3 border-t border-slate-200 dark:border-slate-800">
+      <button type="button"
+        class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 min-h-[2.75rem] flex items-center transition-colors cursor-pointer border-0 bg-transparent"
+        (click)="signOut()">
+        Sign out
+      </button>
+    </div>
+    } @else {
+    <div class="px-4 py-4">
+      <p class="text-sm text-slate-600 dark:text-slate-400">Sign in with your Addhuri account to see your habits.</p>
+      <a routerLink="/login" class="primary-btn mt-3 inline-block no-underline" (click)="closeMobileMenu()">Sign in</a>
+    </div>
+    }
   </aside>
 </div>
 }

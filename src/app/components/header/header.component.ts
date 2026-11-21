@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AppService } from '../../services/app.service';
+import { AuthService } from '../../services/auth.service';
 import { SettingsComponent } from '../settings/settings.component';
 import { environment } from '../../../environments/environment';
 
@@ -26,6 +27,9 @@ export class HeaderComponent {
   showSettingsModal = false;
   mobileMenuOpen = false;
   moreMenuOpen = false;
+  accountMenuOpen = false;
+
+  readonly auth = inject(AuthService);
 
   /** High-traffic routes shown inline on desktop */
   readonly primaryLinks: NavLink[] = [
@@ -86,15 +90,31 @@ export class HeaderComponent {
 
   toggleMoreMenu(): void {
     this.moreMenuOpen = !this.moreMenuOpen;
+    if (this.moreMenuOpen) {
+      this.accountMenuOpen = false;
+    }
   }
 
   closeMoreMenu(): void {
     this.moreMenuOpen = false;
   }
 
+  toggleAccountMenu(): void {
+    this.accountMenuOpen = !this.accountMenuOpen;
+    if (this.accountMenuOpen) {
+      this.moreMenuOpen = false;
+    }
+  }
+
   closeAllMenus(): void {
     this.mobileMenuOpen = false;
     this.moreMenuOpen = false;
+    this.accountMenuOpen = false;
+  }
+
+  signOut(): void {
+    this.closeAllMenus();
+    this.auth.signOut();
   }
 
   isExactHome(path: string): boolean {
@@ -118,13 +138,15 @@ export class HeaderComponent {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    if (!this.moreMenuOpen) {
+    if (!this.moreMenuOpen && !this.accountMenuOpen) {
       return;
     }
     const target = event.target as HTMLElement | null;
-    if (target?.closest('.header-more')) {
-      return;
+    if (this.moreMenuOpen && !target?.closest('.header-more')) {
+      this.closeMoreMenu();
     }
-    this.closeMoreMenu();
+    if (this.accountMenuOpen && !target?.closest('.header-account')) {
+      this.accountMenuOpen = false;
+    }
   }
 }

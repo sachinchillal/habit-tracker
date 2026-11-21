@@ -73,7 +73,8 @@
               "buildTarget": "habit-tracker:build:production"
             },
             "development": {
-              "buildTarget": "habit-tracker:build:development"
+              "buildTarget": "habit-tracker:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

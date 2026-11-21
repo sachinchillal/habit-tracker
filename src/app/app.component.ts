@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { AppService } from './services/app.service';
+import { AuthService } from './services/auth.service';
 import { LoaderComponent } from './components/loader/loader.component';
 import { ToastComponent } from "./components/toast/toast.component";
 import { HeaderComponent } from './components/header/header.component';
@@ -16,5 +17,8 @@ import { HeaderComponent } from './components/header/header.component';
 export class AppComponent {
   title = 'habit-tracker';
 
-  constructor(public appService: AppService) { }
+  constructor(public appService: AppService, authService: AuthService) {
+    // Confirm the SSO session with the API (and load the profile) once per page load.
+    authService.verifySession();
+  }
 }

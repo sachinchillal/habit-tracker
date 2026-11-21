@@ -4,12 +4,25 @@ import { HttpClient } from '@angular/common/http';
 import { ApiMarksObject, ApiTask, TaskCreate, Category } from './interfaces';
 
 const API = `${environment.api.baseUrl}${environment.api.habitTracker}`;
+/** Shared awb auth routes (the same backend SSO uses). */
+const AUTH_API = `${environment.api.baseUrl}auth/`;
+
+export interface UserInfoResponse {
+  data?: unknown;
+  message?: string;
+  status?: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
   constructor(private httpClient: HttpClient) { }
+
+  // Auth: 403 when the SSO session was revoked or the token is invalid.
+  getUserInfo() {
+    return this.httpClient.get<UserInfoResponse>(AUTH_API + 'userinfo');
+  }
 
   // App API Requests
   categoryCreate(category: Category) {

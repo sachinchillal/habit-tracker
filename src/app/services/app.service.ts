@@ -2,6 +2,7 @@ import { EventEmitter, Injectable, Signal, signal, WritableSignal } from '@angul
 import { ACTIONS, ApiMarksObject, ApiTask, INIT_TASK, PAGES, Task, Category } from './interfaces';
 import { ApiService } from './api.service';
 import { StoreService } from './store.service';
+import { AuthService } from './auth.service';
 import { orderCategoriesAsTree } from '../utils/category.util';
 
 interface AppEventEmitter {
@@ -47,8 +48,13 @@ export class AppService {
   autoClear = true;
   leafOnly = false;
 
-  constructor(private apiService: ApiService, private storeService: StoreService) {
-    this.initStore();
+  constructor(private apiService: ApiService, private storeService: StoreService, private authService: AuthService) {
+    // AppService is created on every page (header, root component), including the public
+    // landing and sign-in pages. Only load habits for a signed-in user; signing in always
+    // arrives with a fresh page load (back from SSO, or a reload after another tab signed in).
+    if (this.authService.isAuthenticated()) {
+      this.initStore();
+    }
     this.initStateChanges();
   }
   private initStateChanges() {

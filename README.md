@@ -10,6 +10,34 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
 
+## Authentication (SSO)
+
+Every page except the landing page (`/`) needs a signed-in domain account. Sign-in is handled by the
+[SSO app](../sso) (`github/sso`, backed by `github/awb`):
+
+1. A signed-out user opening a protected page (e.g. `/todos`) is sent to `/login?returnUrl=/todos`.
+2. **Sign in** / **Create account** go to `{sso.url}sign-in?appId=…` (`environment.sso`; `appId` defaults to `api.accessCode`).
+3. SSO stores the session in `localStorage["sso"]` and sends the user back to the app root. Habit Tracker reads
+   the session from there (same origin), and the landing page resumes the page the user asked for.
+4. The session is confirmed in the background with `GET auth/userinfo`; if the server rejects it, the user is sent
+   to sign in again. Signing in or out in another tab reloads open Habit Tracker tabs.
+5. **Sign out** (account menu) clears cached habits and opens SSO's logout page.
+
+The session only works when both apps share an origin (`https://domain.com` in production). For local development,
+`ng serve` proxies `http://localhost:4200/sso/` to the SSO dev server ([proxy.conf.json](proxy.conf.json)):
+
+```bash
+cd github/awb && npm start            # API on :3000 (needs its .env / database)
+cd github/sso && npm run s:proxied    # SSO on :5050, served under /sso/
+cd github/habit-tracker && npm start  # http://localhost:4200
+```
+
+SSO's return URL comes from awb and points at production, so after signing in locally, go back to
+`http://localhost:4200/` yourself. Tip: ctrl-click **Sign in** to open SSO in a new tab; the original tab continues
+by itself once you are signed in.
+
+Note: awb's `habitTracker/` routes only check the access code, so habit data is not yet separated per user.
+
 ## Code scaffolding
 
 Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
