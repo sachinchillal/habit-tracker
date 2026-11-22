@@ -5,11 +5,12 @@ import { SearchBoxComponent } from '../search-box/search-box.component';
 import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
 import { ACTIONS, Task } from '../../services/interfaces';
+import { TagChipsComponent } from '../tag-chips/tag-chips.component';
 
 @Component({
   selector: 'app-task-list',
   standalone: true,
-  imports: [CommonModule, SearchBoxComponent],
+  imports: [CommonModule, SearchBoxComponent, TagChipsComponent],
   templateUrl: './task-list.component.html',
   styleUrl: './task-list.component.scss'
 })
@@ -31,6 +32,10 @@ export class TaskListComponent {
 
 
   constructor(public appService: AppService, private apiService: ApiService, private toastService: ToastService) { }
+
+  tagsFor(task: Task) {
+    return this.appService.getTagsForTask(task);
+  }
 
 
   private timeoutId: any;

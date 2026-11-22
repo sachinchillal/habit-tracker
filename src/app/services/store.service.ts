@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
-import { ApiMarksObject, Task, Category, ViewMode, THEME_TYPE } from './interfaces';
+import { ApiMarksObject, Task, Category, HabitTag, ViewMode, THEME_TYPE } from './interfaces';
 import { environment } from '../../environments/environment';
 
 const LOCAL_STORAGE_KEY = environment.localStorageKey;
 const CATEGORIES_KEY = LOCAL_STORAGE_KEY + 'Categories';
 const TASKS_KEY = LOCAL_STORAGE_KEY + 'Tasks';
 const MARKS_KEY = LOCAL_STORAGE_KEY + 'Marks';
+const TAGS_KEY = LOCAL_STORAGE_KEY + 'Tags';
 const TODOS_VIEW_KEY = LOCAL_STORAGE_KEY + 'TodosView';
 // Also read before Angular boots by the inline theme script in src/index.html
 // ('habitTrackerThemeType'); update that script if this key changes.
@@ -44,6 +45,10 @@ export class StoreService {
     return this.getJSON<ApiMarksObject>(MARKS_KEY, {});
   }
 
+  getTags(): HabitTag[] {
+    return this.getJSON<HabitTag[]>(TAGS_KEY, []);
+  }
+
   saveCategories(categories: Category[]): void {
     this.setJSON(CATEGORIES_KEY, categories);
   }
@@ -54,6 +59,10 @@ export class StoreService {
 
   saveMarks(marks: ApiMarksObject): void {
     this.setJSON(MARKS_KEY, marks);
+  }
+
+  saveTags(tags: HabitTag[]): void {
+    this.setJSON(TAGS_KEY, tags);
   }
 
   clearCategories(): void {
@@ -68,10 +77,15 @@ export class StoreService {
     localStorage.removeItem(MARKS_KEY);
   }
 
+  clearTags(): void {
+    localStorage.removeItem(TAGS_KEY);
+  }
+
   clearAll(): void {
     this.clearCategories();
     this.clearTasks();
     this.clearMarks();
+    this.clearTags();
   }
 
   private getJSON<T>(key: string, fallback: T): T {

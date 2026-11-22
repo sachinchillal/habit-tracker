@@ -1,5 +1,5 @@
 import { EventEmitter, Injectable, Signal, signal, WritableSignal } from '@angular/core';
-import { ACTIONS, ApiMarksObject, ApiTask, INIT_TASK, PAGES, Task, Category } from './interfaces';
+import { ACTIONS, ApiMarksObject, ApiTask, INIT_TASK, PAGES, Task, Category, HabitTag } from './interfaces';
 import { ApiService } from './api.service';
 import { StoreService } from './store.service';
 import { AuthService } from './auth.service';
@@ -7,7 +7,7 @@ import { orderCategoriesAsTree } from '../utils/category.util';
 
 interface AppEventEmitter {
   action: ACTIONS,
-  data: Task | Category | Partial<Category>
+  data: Task | Category | Partial<Category> | HabitTag
 }
 
 export enum STATE_ACTIONS {
@@ -27,6 +27,8 @@ export class AppService {
   isLoading: boolean = false;
 
   readonly categories: Category[] = [];
+  readonly tags: HabitTag[] = [];
+  tagsMap: { [key: number]: HabitTag } = {};
   readonly _tasks = signal<Task[]>([]);
   readonly tasks: Task[] = [];
   readonly tasksOriginal = signal<Task[]>([]);
@@ -77,6 +79,7 @@ export class AppService {
   }
   private initStore() {
     this.initCategories();
+    this.initTags();
     this.initTasks();
     this.initMarks();
   }
@@ -118,6 +121,8 @@ export class AppService {
       case PAGES.HABIT_LIST:
         this.rearrangeTasksForPageHabitList();
         break;
+      case PAGES.HABIT_TAGS:
+        break;
 
       default:
         console.warn('No page found for', page);
@@ -156,6 +161,9 @@ export class AppService {
         break;
       case PAGES.HABIT_CATEGORY:
         this.fetchCategories();
+        break;
+      case PAGES.HABIT_TAGS:
+        this.fetchTags();
         break;
 
       default:
@@ -299,6 +307,54 @@ export class AppService {
       }
     }
     return orderCategoriesAsTree(this.categories.filter(c => !excluded.has(c.id)));
+  }
+
+  // TAGS
+  private initTags() {
+    const tags = this.storeService.getTags();
+    if (tags.length > 0) {
+      this.assignTags(tags);
+    } else {
+      this.fetchTags();
+    }
+  }
+
+  public fetchTags() {
+    this.isLoading = true;
+    this.apiService.getTags().subscribe({
+      next: (res) => {
+        const tags: HabitTag[] = Array.isArray(res.data) ? res.data : [];
+        this.storeService.saveTags(tags);
+        this.assignTags(tags);
+        this.isLoading = false;
+      },
+      error: () => {
+        this.isLoading = false;
+      },
+    });
+  }
+
+  private assignTags(tags: HabitTag[]): void {
+    this.tags.length = 0;
+    this.tagsMap = {};
+    const active = tags.filter((tag) => tag.isActive !== false);
+    active.forEach((tag) => {
+      this.tagsMap[tag.id] = tag;
+    });
+    this.tags.push(...active.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })));
+  }
+
+  getTagsForTask(task: { tagIds?: number[] }): HabitTag[] {
+    if (!task.tagIds?.length) {
+      return [];
+    }
+    return task.tagIds
+      .map((id) => this.tagsMap[id])
+      .filter((tag): tag is HabitTag => !!tag);
+  }
+
+  habitCountForTag(tagId: number): number {
+    return this.tasksOriginal().filter((task) => task.tagIds?.includes(tagId)).length;
   }
 
   // TASKS

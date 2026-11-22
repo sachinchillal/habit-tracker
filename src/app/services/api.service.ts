@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
-import { ApiMarksObject, ApiTask, TaskCreate, Category } from './interfaces';
+import { ApiMarksObject, ApiTask, TaskCreate, Category, HabitTag, TagWrite } from './interfaces';
 
 const API = `${environment.api.baseUrl}${environment.api.habitTracker}`;
 /** Shared awb auth routes (the same backend SSO uses). */
@@ -62,6 +62,10 @@ export class ApiService {
     if (task.weekDays) {
       body.weekDays = task.weekDays;
     }
+    // An empty list clears tags. Omitting the field leaves them unchanged.
+    if (task.tagIds !== undefined) {
+      body.tagIds = task.tagIds;
+    }
     return this.httpClient.post(API + 'task', body);
   }
   getTasks() {
@@ -78,6 +82,10 @@ export class ApiService {
     }
     if (task.weekDays) {
       body.weekDays = task.weekDays;
+    }
+    // An empty list clears tags. Omitting the field leaves them unchanged.
+    if (task.tagIds !== undefined) {
+      body.tagIds = task.tagIds;
     }
     return this.httpClient.put(API + 'task', body);
   }
@@ -104,5 +112,30 @@ export class ApiService {
   }
   getMarks() {
     return this.httpClient.get<{ data: ApiMarksObject }>(API + 'marks');
+  }
+
+  getTags() {
+    return this.httpClient.get<{ data: HabitTag[] }>(API + 'tags');
+  }
+  tagCreate(tag: TagWrite) {
+    const body: any = {
+      name: tag.name,
+      description: tag.description,
+      color: tag.color,
+    }
+    if (!tag.description) {
+      delete body.description;
+    }
+    return this.httpClient.post<{ data: HabitTag }>(API + 'tags', body);
+  }
+  tagUpdate(id: number, tag: TagWrite) {
+    return this.httpClient.put<{ data: HabitTag }>(API + `tags/${id}`, {
+      name: tag.name,
+      description: tag.description,
+      color: tag.color,
+    });
+  }
+  tagDelete(id: number) {
+    return this.httpClient.delete(API + `tags/${id}`);
   }
 }

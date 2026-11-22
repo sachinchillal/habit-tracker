@@ -1,0 +1,29 @@
+<div class="flex flex-wrap gap-1.5" [attr.role]="selectable ? 'group' : 'list'" [attr.aria-label]="ariaLabel">
+  @for (tag of tags; track tag.id) {
+    @if (selectable) {
+      <button type="button"
+        class="inline-flex items-center gap-1.5 max-w-full rounded-full border px-2.5 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+        [style.backgroundColor]="isSelected(tag.id) ? tag.color : null"
+        [style.color]="isSelected(tag.id) ? textColor(tag.color) : null"
+        [style.borderColor]="isSelected(tag.id) ? tag.color : null"
+        [ngClass]="isSelected(tag.id) ? '' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-600'"
+        [attr.aria-pressed]="isSelected(tag.id)"
+        [attr.aria-label]="tag.name"
+        [title]="tag.description || tag.name"
+        (click)="toggled.emit(tag.id)">
+        <span class="h-2 w-2 rounded-full shrink-0" aria-hidden="true"
+          [style.backgroundColor]="isSelected(tag.id) ? textColor(tag.color) : tag.color"></span>
+        <span class="truncate">{{ tag.name }}</span>
+      </button>
+    } @else {
+      <span role="listitem"
+        class="inline-flex items-center max-w-full rounded-full px-2 py-0.5 text-xs font-medium"
+        [style.backgroundColor]="tag.color"
+        [style.color]="textColor(tag.color)"
+        [attr.aria-label]="tag.name"
+        [title]="tag.description || tag.name">
+        <span class="truncate">{{ tag.name }}</span>
+      </span>
+    }
+  }
+</div>

@@ -5,7 +5,8 @@
       <h3 class="kanban-column-header">{{ col.title }}</h3>
       <div class="kanban-column-content" [ngClass]="{'gap-0!':!isVisibleLevel2Border}">
         <app-checkbox-item *ngFor="let task of col.tasks; let i = index; trackBy: trackTaskById" [task]="task"
-          [index]="i" [isVisibleBorder]="isVisibleLevel2Border" (toggleComplete)="onToggleComplete($event)">
+          [index]="i" [isVisibleBorder]="isVisibleLevel2Border" [showTags]="false"
+          (toggleComplete)="onToggleComplete($event)">
         </app-checkbox-item>
         <p *ngIf="col.tasks.length === 0" class="kanban-empty">No tasks</p>
       </div>

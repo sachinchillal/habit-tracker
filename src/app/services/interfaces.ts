@@ -15,6 +15,7 @@ export interface ApiTask extends BaseProps {
 
   categoryId?: number; // Optional category ID
   weekDays?: WeekDay[];
+  tagIds?: number[];
 }
 export interface Task extends ApiTask {
   // UI-only (set in app.service)
@@ -35,6 +36,7 @@ export const INIT_TASK: Task = {
   createdAt: +new Date(),
   updatedAt: +new Date(),
   categoryName: undefined,
+  tagIds: undefined,
   isDone: false,
   lastUpdatedAt: 0,
   lastUpdated: '',
@@ -57,6 +59,31 @@ export const INIT_CATEGORY: Category = {
   parentId: undefined,
   taskCount: 0
 };
+
+/** Habit-tracker tag. `id` is 0 only for a blank create form. */
+export interface HabitTag extends DateProps {
+  id: number;
+  name: string;
+  description: string;
+  color: string;
+  isActive: boolean;
+}
+
+export const INIT_TAG: HabitTag = {
+  id: 0,
+  name: '',
+  description: '',
+  color: '#64748b',
+  isActive: true,
+  createdAt: +new Date(),
+  updatedAt: +new Date(),
+};
+
+export interface TagWrite {
+  name: string;
+  description: string;
+  color: string;
+}
 
 export interface ApiMarksObject {
   [key: number]: number[]
@@ -141,6 +168,7 @@ export interface TaskCreate {
   description: string;
   categoryId?: number; // Optional category ID
   weekDays?: WeekDay[];
+  tagIds?: number[];
 }
 export const INIT_TASK_CREATE: TaskCreate = {
   id: undefined,
@@ -148,6 +176,7 @@ export const INIT_TASK_CREATE: TaskCreate = {
   description: '',
   categoryId: undefined,
   weekDays: [],
+  tagIds: [],
 };
 
 export type ToastType = 'success' | 'error';
@@ -174,6 +203,7 @@ export enum THEME_TYPE {
 export enum ACTIONS {
   EDIT_CATEGORY = "EDIT_CATEGORY",
   EDIT_TASK = "EDIT_TASK",
+  EDIT_TAG = "EDIT_TAG",
 }
 
 export enum PAGES {
@@ -184,6 +214,7 @@ export enum PAGES {
   GROUPED_TODOS,
   HABIT_LIST,
   HABIT_CATEGORY,
+  HABIT_TAGS,
 }
 
 export enum BORDER_ITEMS {

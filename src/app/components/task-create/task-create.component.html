@@ -41,6 +41,22 @@
         {{ appService.categoryTaskMap[task.categoryId ?? 0]?.length ?? 0 }}</p>
     </div>
 
+    <div class="flex flex-col gap-1.5">
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-sm font-medium text-gray-700 dark:text-gray-200" id="task-tags-label">Tags</span>
+        <a *ngIf="appService.tags.length" routerLink="/tags"
+          class="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline">Manage tags</a>
+      </div>
+      <app-tag-chips *ngIf="appService.tags.length; else noTags" [tags]="appService.tags"
+        [selectedIds]="task.tagIds ?? []" [selectable]="true" ariaLabel="Habit tags" (toggled)="toggleTag($event)" />
+      <ng-template #noTags>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          No tags yet.
+          <a routerLink="/tags" class="font-medium text-blue-600 dark:text-blue-400 hover:underline">Create a tag</a>
+        </p>
+      </ng-template>
+    </div>
+
     <fieldset class="flex flex-col gap-2 border-0 p-0 m-0 min-w-0">
       <legend class="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
         Repeat on

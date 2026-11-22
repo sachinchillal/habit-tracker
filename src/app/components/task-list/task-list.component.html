@@ -12,6 +12,9 @@
     <li *ngFor="let t of tasks(); let index=index; trackBy: trackCategoryById"
       class="relative rounded shadow p-2 border border-gray-200 dark:border-gray-700">
       <div class="mb-2">{{t.title}}</div>
+      <ng-container *ngIf="tagsFor(t) as tags">
+        <app-tag-chips *ngIf="tags.length" [tags]="tags" class="mb-2" />
+      </ng-container>
       <div class="mb-2 text-gray-400">{{t.description}}</div>
       <div class="flex gap-2 items-center">
         <div class="text-xs text-gray-500">{{t.createdAt | date:'medium'}}</div>

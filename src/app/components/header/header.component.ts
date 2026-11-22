@@ -42,6 +42,7 @@ export class HeaderComponent {
 
   /** Secondary routes under the More dropdown / mobile drawer section */
   readonly moreLinks: NavLink[] = [
+    { path: '/tags', label: 'Tags' },
     { path: '/list', label: 'Habit List' },
     { path: '/grouped-todos', label: 'Grouped ToDos' },
   ];

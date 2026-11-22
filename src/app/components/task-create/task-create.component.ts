@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit } from '@angular/core';
 import { FormsModule } from "@angular/forms";
+import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import {
   ACTIONS,
@@ -17,11 +18,12 @@ import {
 } from '../../services/interfaces';
 import { AppService } from '../../services/app.service';
 import { ToastService } from '../../services/toast.service';
+import { TagChipsComponent } from '../tag-chips/tag-chips.component';
 
 @Component({
   selector: 'app-task-create',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink, TagChipsComponent],
   templateUrl: './task-create.component.html',
   styleUrl: './task-create.component.scss'
 })
@@ -41,6 +43,7 @@ export class TaskCreateComponent implements OnInit {
         this.task = {
           ...data,
           weekDays: data.weekDays?.length ? [...data.weekDays] : [],
+          tagIds: data.tagIds?.length ? [...data.tagIds] : [],
         };
         this.syncCategoryQueryFromSelection();
         this.categoryDropdownOpen = false;
@@ -212,6 +215,17 @@ export class TaskCreateComponent implements OnInit {
     this.task.weekDays = [];
   }
 
+  toggleTag(id: number): void {
+    const current = [...(this.task.tagIds ?? [])];
+    const index = current.indexOf(id);
+    if (index >= 0) {
+      current.splice(index, 1);
+    } else {
+      current.push(id);
+    }
+    this.task.tagIds = current;
+  }
+
   applyWeekDayPreset(preset: WeekDayPreset): void {
     this.setWeekDays(weekDaysForPreset(preset));
   }
@@ -265,7 +279,7 @@ export class TaskCreateComponent implements OnInit {
   }
 
   resetForm() {
-    this.task = { ...INIT_TASK_CREATE };
+    this.task = { ...INIT_TASK_CREATE, tagIds: [] };
     this.categoryQuery = '';
     this.categoryDropdownOpen = false;
     this.highlightedIndex = -1;
@@ -276,6 +290,7 @@ export class TaskCreateComponent implements OnInit {
       ...this.task,
       title: this.task.title,
       description: this.task.description,
+      tagIds: [...(this.task.tagIds ?? [])],
     };
     if (this.task.categoryId) {
       payload.categoryId = +this.task.categoryId;

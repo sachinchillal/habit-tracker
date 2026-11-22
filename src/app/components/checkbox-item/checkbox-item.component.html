@@ -51,6 +51,8 @@
       </span> -->
     </div>
 
+    <app-tag-chips *ngIf="showTags && !compact && taskTags.length" [tags]="taskTags" class="mt-1" />
+
     <!-- Task Description (if available) -->
     <p *ngIf="task.description" class="text-slate-500 dark:text-slate-400 truncate"
       [ngClass]="compact ? 'text-xs' : 'text-sm'"
@@ -131,6 +133,15 @@
             <div class="text-xs font-semibold text-slate-500 dark:text-slate-400">Category</div>
             <div class="mt-0.5 text-slate-800 dark:text-slate-100">{{ task.categoryName ?? '—' }}
             </div>
+          </div>
+          <div>
+            <div class="text-xs font-semibold text-slate-500 dark:text-slate-400">Tags</div>
+            <div class="mt-1" *ngIf="taskTags.length; else noTags">
+              <app-tag-chips [tags]="taskTags" />
+            </div>
+            <ng-template #noTags>
+              <div class="mt-0.5 text-slate-800 dark:text-slate-100">—</div>
+            </ng-template>
           </div>
           <div>
             <div class="text-xs font-semibold text-slate-500 dark:text-slate-400">lastUpdated</div>

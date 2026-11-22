@@ -11,6 +11,7 @@ import { LoginComponent } from './pages/login/login.component';
 
 import { PAGES } from './services/interfaces';
 import { TreeComponent } from './pages/tree/tree.component';
+import { TagsComponent } from './pages/tags/tags.component';
 import { authGuard, guestGuard, resumeAfterSignInGuard } from './services/auth.guards';
 
 export const routes: Routes = [
@@ -33,6 +34,7 @@ export const routes: Routes = [
       { path: 'grouped-todos', component: GroupedTodosComponent, title: 'Grouped ToDos', data: { page: PAGES.GROUPED_TODOS } },
       { path: 'list', component: ListComponent, title: 'Habit List', data: { page: PAGES.HABIT_LIST } },
       { path: 'category', component: CategoryComponent, title: 'Categories', data: { page: PAGES.HABIT_CATEGORY } },
+      { path: 'tags', component: TagsComponent, title: 'Tags', data: { page: PAGES.HABIT_TAGS } },
     ],
   },
 

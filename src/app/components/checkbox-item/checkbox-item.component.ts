@@ -1,6 +1,7 @@
 import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Task, TOAST_TYPE } from '../../services/interfaces';
+import { HabitTag, Task, TOAST_TYPE } from '../../services/interfaces';
+import { TagChipsComponent } from '../tag-chips/tag-chips.component';
 import { MarkdownPipe } from '../../pipes/markdown.pipe';
 import { ApiService } from '../../services/api.service';
 import { AppService } from '../../services/app.service';
@@ -9,7 +10,7 @@ import { ToastService } from '../../services/toast.service';
 @Component({
   selector: 'app-checkbox-item',
   standalone: true,
-  imports: [CommonModule, MarkdownPipe],
+  imports: [CommonModule, MarkdownPipe, TagChipsComponent],
   templateUrl: './checkbox-item.component.html',
   styleUrl: './checkbox-item.component.scss'
 })
@@ -18,6 +19,8 @@ export class CheckboxItemComponent {
   @Input() index!: number;
   @Input() isVisibleBorder: boolean = false;
   @Input() compact = false;
+  /** Kanban cards stay title-only; tags still show in the detail panel. */
+  @Input() showTags = true;
 
   @Output() toggleComplete = new EventEmitter<number>();
 
@@ -31,6 +34,10 @@ export class CheckboxItemComponent {
     private appService: AppService,
     private toastService: ToastService
   ) { }
+
+  get taskTags(): HabitTag[] {
+    return this.appService.getTagsForTask(this.task);
+  }
 
   onToggleComplete() {
     this.toggleComplete.emit(this.task.id);
