@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { buildInfo } from '../../../environments/build-info';
 import { BorderItem, THEME_TYPE as TT } from '../../services/interfaces';
 import { SettingsService } from '../../services/settings.service';
 import { ThemeService } from '../../services/theme.service';
@@ -17,6 +18,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   @Output() close = new EventEmitter<void>();
 
   readonly THEME_TYPE = TT;
+  readonly buildInfo = buildInfo;
 
   borderItems: BorderItem[] = [];
   private borderSub?: Subscription;

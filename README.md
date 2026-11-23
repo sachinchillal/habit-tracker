@@ -46,6 +46,25 @@ Run `ng generate component component-name` to generate a new component. You can 
 
 Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
 
+## Version and build info
+
+Settings (and the browser console on startup) shows e.g. `Version 1.0.0 · 170a4e2` and `Built Nov 26, 2026, 11:07:59 AM` (local time; hover for the exact UTC value).
+
+- **Version** — set by a person, once per release, in `package.json` only (see Releasing). Builds never change it.
+- **Commit and build time** — written automatically by [scripts/build-info.mjs](scripts/build-info.mjs) into
+  `src/environments/build-info.ts` before every `npm run s|start|build|b|g|watch|test`. That file is gitignored.
+  `-dirty` after the commit means the build included uncommitted changes.
+
+Running `ng serve` / `ng build` directly skips the script; run `npm run build-info` once first (needed after a fresh clone).
+
+## Releasing
+
+1. In [CHANGELOG.md](CHANGELOG.md), rename `[Unreleased]` to `[X.Y.Z] - YYYY-MM-DD` (add a new empty `[Unreleased]`) and commit.
+2. `npm version minor` — or `patch` (fixes only) / `major` (breaking changes). Needs a clean working tree; it bumps
+   `package.json` and `package-lock.json`, commits, and tags `vX.Y.Z`.
+3. `git push --follow-tags`
+4. `npm run b` and deploy `dist/`.
+
 ## Running unit tests
 
 Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).

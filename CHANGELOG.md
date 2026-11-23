@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Version and build info** (2026-11-26) — Settings shows the app version, the git commit it was built from, and when it was built; the browser console logs the same line on startup. `scripts/build-info.mjs` writes this before every serve, build, and test. `package.json` now says `1.0.0` to match the last release.
 - **Sign in with SSO** (2026-11-21) — every page except the landing page needs a signed-in account. Signed-out users get a sign-in page that hands over to SSO and returns them to the page they opened. The header shows an account menu with Sign out, the session is checked with the API, and signing in or out in another tab updates open tabs. Local development proxies `/sso` to the SSO dev server.
 - **Public landing page** (2026-11-21) — intro at `/` covering daily check-ins, streaks, and categories. The dashboard shows an empty state until the first habit exists.
 - **Search metadata** (2026-11-20) — branded page titles, description, Open Graph and Twitter cards, JSON-LD, a canonical URL, and a sitemap. Only the landing page is indexable; habit pages stay `noindex`.

@@ -1,15 +1,16 @@
 {
   "name": "habit-tracker",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "scripts": {
     "ng": "ng",
-    "s": "ng serve",
-    "start": "ng serve",
-    "build": "ng build",
-    "b": "ng build --base-href=/habit-tracker/",
-    "g": "ng build --base-href=/g/",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "build-info": "node scripts/build-info.mjs",
+    "s": "npm run build-info && ng serve",
+    "start": "npm run build-info && ng serve",
+    "build": "npm run build-info && ng build",
+    "b": "npm run build-info && ng build --base-href=/habit-tracker/",
+    "g": "npm run build-info && ng build --base-href=/g/",
+    "watch": "npm run build-info && ng build --watch --configuration development",
+    "test": "npm run build-info && ng test"
   },
   "private": true,
   "dependencies": {
