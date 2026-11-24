@@ -42,6 +42,11 @@ export const INIT_TASK: Task = {
   lastUpdated: '',
   lastUpdatedColor: 'text-slate-red dark:text-red-400',
 };
+/** Drops the UI-only fields so only API data remains (what localStorage keeps). */
+export function toApiTask(task: ApiTask & Partial<Task>): ApiTask {
+  const { categoryName, isDone, lastUpdatedAt, lastUpdated, lastUpdatedColor, ...api } = task;
+  return api;
+}
 export interface ApiCategory extends BaseProps {
   parentId?: number;
 }

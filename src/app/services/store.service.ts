@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ApiMarksObject, Task, Category, HabitTag, ViewMode, THEME_TYPE } from './interfaces';
+import { ApiMarksObject, ApiTask, Category, HabitTag, ViewMode, THEME_TYPE, toApiTask } from './interfaces';
 import { environment } from '../../environments/environment';
 
 const LOCAL_STORAGE_KEY = environment.localStorageKey;
@@ -37,8 +37,20 @@ export class StoreService {
     return this.getJSON<Category[]>(CATEGORIES_KEY, []);
   }
 
-  getTasks(): Task[] {
-    return this.getJSON<Task[]>(TASKS_KEY, []);
+  /** Raw API tasks. UI fields are never stored; AppService rebuilds them on every load. */
+  getTasks(): ApiTask[] {
+    const stored = this.getJSON<ApiTask[]>(TASKS_KEY, []);
+    if (!Array.isArray(stored)) return [];
+    const tasks = stored.map(toApiTask);
+    // Older builds cached UI fields too: rewrite that cache once as raw API data.
+    if (tasks.some((task, i) => Object.keys(task).length !== Object.keys(stored[i]).length)) {
+      try {
+        this.saveTasks(tasks);
+      } catch {
+        // ignore storage errors; the next fetch rewrites the cache
+      }
+    }
+    return tasks;
   }
 
   getMarks(): ApiMarksObject {
@@ -53,8 +65,8 @@ export class StoreService {
     this.setJSON(CATEGORIES_KEY, categories);
   }
 
-  saveTasks(tasks: Task[]): void {
-    this.setJSON(TASKS_KEY, tasks);
+  saveTasks(tasks: ApiTask[]): void {
+    this.setJSON(TASKS_KEY, tasks.map(toApiTask));
   }
 
   saveMarks(marks: ApiMarksObject): void {

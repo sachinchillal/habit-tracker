@@ -47,6 +47,8 @@ export class AppService {
   date: string = '';
   time: string = '';
   searchText: string = '';
+  /** Todos page tag filter: a task shows if it has any of these tags (empty = no filter). */
+  selectedTagIds: number[] = [];
   autoClear = true;
   leafOnly = false;
 
@@ -92,10 +94,9 @@ export class AppService {
     }
   }
   private initTasks() {
-    const tasks = this.storeService.getTasks();
-    if (tasks && tasks.length > 0) {
-      this.assignTasks(tasks);
-      this._tasks.set(tasks);
+    const apiTasks = this.storeService.getTasks();
+    if (apiTasks.length > 0) {
+      this.assignTasks(apiTasks);
     } else {
       this.fetchTasks();
     }
@@ -172,14 +173,42 @@ export class AppService {
     }
   }
 
+  toggleTagFilter(tagId: number) {
+    this.selectedTagIds = this.selectedTagIds.includes(tagId)
+      ? this.selectedTagIds.filter(id => id !== tagId)
+      : [...this.selectedTagIds, tagId];
+    this.applySearchFilter();
+  }
+
+  clearTagFilter() {
+    this.selectedTagIds = [];
+    this.applySearchFilter();
+  }
+
+  /**
+   * Base task list for the current page. The Todos page never shows paused tasks, keeps only
+   * tasks with any selected tag, and lists the least recently marked first
+   * (returns a new array; tasksOriginal is never re-ordered).
+   */
+  private visibleTasksForPage(): Task[] {
+    const all = this.tasksOriginal();
+    if (this.currentPage !== PAGES.TODOS) {
+      return all;
+    }
+    const tagIds = this.selectedTagIds;
+    return all
+      .filter(t => !t.isPaused && (tagIds.length === 0 || !!t.tagIds?.some(id => tagIds.includes(id))))
+      .sort((a, b) => (a.lastUpdatedAt ?? 0) - (b.lastUpdatedAt ?? 0));
+  }
+
   private applySearchFilter() {
-    // Implement search logic here
+    const source = this.visibleTasksForPage();
     this.tasks.length = 0;
     if (this.searchText.trim() === '') {
-      this.tasks.push(...this.tasksOriginal());
+      this.tasks.push(...source);
     } else {
       const searchLower = this.searchText.toLowerCase();
-      const filteredTasks = this.tasksOriginal().filter(task =>
+      const filteredTasks = source.filter(task =>
         task.title.toLowerCase().includes(searchLower) ||
         (task.description && task.description.toLowerCase().includes(searchLower))
       );
@@ -192,20 +221,8 @@ export class AppService {
     this.tasks.sort((a, b) => a.title.localeCompare(b.title));
   }
   private rearrangeTasksForPageTodos() {
-    // First rearrange tasksOriginal
-    const todoTasksOriginal = this.tasksOriginal().filter(task => !task.isDone);
-    const combinedTasksOriginal = todoTasksOriginal.concat(this.tasksOriginal().filter(task => task.isDone)).filter(t => !t.isPaused);
-    combinedTasksOriginal.sort((a, b) => (a.lastUpdatedAt - b.lastUpdatedAt));
-    // this.tasksOriginal.length = 0;
-    // this.tasksOriginal.push(...combinedTasksOriginal);
-
-    // Then apply search filter if active, otherwise use all tasksOriginal
-    if (this.searchText.trim() !== '') {
-      this.applySearchFilter();
-    } else {
-      this.tasks.length = 0;
-      this.tasks.push(...combinedTasksOriginal);
-    }
+    // Hiding paused tasks and sorting by last mark (oldest first) happen in visibleTasksForPage()
+    this.applySearchFilter();
   }
   private rearrangeTasksForPageHabitList() {
     // show all tasks
@@ -242,6 +259,8 @@ export class AppService {
     });
     // Depth-first tree order so parents appear above their children
     this.categories.push(...orderCategoriesAsTree(categories));
+    // Tasks may have loaded first: refresh their categoryName from the new categories.
+    this.buildUIProps();
   }
 
   /** Full ancestry path including the category itself, e.g. "Sports › Running › Tempo". */
@@ -342,6 +361,15 @@ export class AppService {
       this.tagsMap[tag.id] = tag;
     });
     this.tags.push(...active.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })));
+
+    // Drop filter selections for tags that were deleted or deactivated, so they can't hide tasks unseen.
+    const stillValid = this.selectedTagIds.filter((id) => !!this.tagsMap[id]);
+    if (stillValid.length !== this.selectedTagIds.length) {
+      this.selectedTagIds = stillValid;
+      if (this.currentPage === PAGES.TODOS) {
+        this.applySearchFilter();
+      }
+    }
   }
 
   getTagsForTask(task: { tagIds?: number[] }): HabitTag[] {
@@ -362,16 +390,10 @@ export class AppService {
     this.isLoading = true;
     this.apiService.getTasks().subscribe({
       next: (res) => {
+        // Cache only what the API returned; UI fields are rebuilt in assignTasks on every load.
         const apiTasks: ApiTask[] = res.data ?? [];
-        const _tasks: Task[] = apiTasks.map((task) => ({
-          ...INIT_TASK,
-          ...task,
-          categoryName: task.categoryId
-            ? this.categoriesMap[task.categoryId]?.title
-            : undefined
-        }));
-        this.storeService.saveTasks(_tasks);
-        if (_tasks.length > 0) {
+        this.storeService.saveTasks(apiTasks);
+        if (apiTasks.length > 0) {
           this.eventEmitterStateChanges.emit({ action: STATE_ACTIONS.TASKS_CHANGED });
         }
         this.isLoading = false;
@@ -382,10 +404,13 @@ export class AppService {
     });
   }
 
-  private assignTasks(tasks: Task[]): void {
+  private assignTasks(apiTasks: ApiTask[]): void {
+    // Fresh UI objects from raw API data; buildUIProps() fills in the UI-only fields.
+    const tasks: Task[] = apiTasks.map((task) => ({ ...INIT_TASK, ...task }));
     this.tasks.length = 0; // Clear existing tasks
     this.tasks.push(...tasks);
     this.tasksOriginal.set(tasks);
+    this._tasks.set(tasks);
     this.tasksMap = {}; // Reset the task map
     this.categoryTaskMap = {}; // Reset the category task map
     this.tasks.forEach(task => {
@@ -432,47 +457,58 @@ export class AppService {
   }
   private buildUIPropsForTasks() {
     // Update tasksOriginal to ensure all tasks are updated, not just filtered ones
-    this.tasksOriginal().forEach(task => {
-      const timestamps = this.marks[task.id];
-      if (timestamps && timestamps.length > 0) {
-        const lastTs = Math.max(...timestamps);
-        const lastCreatedAt = new Date(lastTs);
-        const today = new Date();
-        const isToday = lastCreatedAt.getDate() === today.getDate() &&
-          lastCreatedAt.getMonth() === today.getMonth() &&
-          lastCreatedAt.getFullYear() === today.getFullYear();
-        task.isDone = isToday;
-
-        const differenceInDays = Math.floor((today.getTime() - lastCreatedAt.getTime()) / (1000 * 60 * 60 * 24));
-        const differenceInHours = Math.floor((today.getTime() - lastCreatedAt.getTime()) / (1000 * 60 * 60));
-        if (differenceInDays < 2) {
-          if (differenceInHours === 0) {
-            task.lastUpdated = 'a few moments ago';
-            task.lastUpdatedColor = 'text-green-500 dark:text-green-400';
-          } else {
-            task.lastUpdated = `${differenceInHours} hours ago`;
-            task.lastUpdatedColor = 'text-green-200 dark:text-green-100';
-          }
-        } else {
-          if (differenceInDays === 1) {
-            task.lastUpdated = 'Yesterday';
-            task.lastUpdatedColor = 'text-green-600 dark:text-green-500';
-          } else {
-            task.lastUpdated = `${differenceInDays} days ago`;
-            task.lastUpdatedColor = 'text-red-500 dark:text-red-400';
-          }
-        }
-
-        task.lastUpdatedAt = lastTs;
-      }
-    });
+    const today = new Date();
+    this.tasksOriginal().forEach(task => this.applyTaskUIProps(task, today));
     // Calculate noOfTasksDone from tasksOriginal to get accurate count
     this.noOfTasksDone = this.tasksOriginal().filter(t => t.isDone).length;
 
-    // Re-apply search filter immediately if there's an active search
-    if (this.searchText.trim() !== '') {
+    // Rebuild the visible list after any task or marks load: an active search needs re-filtering,
+    // and the Todos page needs paused tasks hidden and the order refreshed from new mark times.
+    if (this.currentPage === PAGES.TODOS || this.searchText.trim() !== '') {
       this.applySearchFilter();
     }
+  }
+  /** Recomputes every UI-only field of a task from categories and marks (never from storage). */
+  private applyTaskUIProps(task: Task, today: Date) {
+    task.categoryName = task.categoryId ? this.categoriesMap[task.categoryId]?.title : undefined;
+    // Reset first so a task whose marks were removed doesn't keep its old state
+    task.isDone = INIT_TASK.isDone;
+    task.lastUpdatedAt = INIT_TASK.lastUpdatedAt;
+    task.lastUpdated = INIT_TASK.lastUpdated;
+    task.lastUpdatedColor = INIT_TASK.lastUpdatedColor;
+
+    const timestamps = this.marks[task.id];
+    if (!timestamps || timestamps.length === 0) {
+      return;
+    }
+    const lastTs = Math.max(...timestamps);
+    const lastCreatedAt = new Date(lastTs);
+    const isToday = lastCreatedAt.getDate() === today.getDate() &&
+      lastCreatedAt.getMonth() === today.getMonth() &&
+      lastCreatedAt.getFullYear() === today.getFullYear();
+    task.isDone = isToday;
+
+    const differenceInDays = Math.floor((today.getTime() - lastCreatedAt.getTime()) / (1000 * 60 * 60 * 24));
+    const differenceInHours = Math.floor((today.getTime() - lastCreatedAt.getTime()) / (1000 * 60 * 60));
+    if (differenceInDays < 2) {
+      if (differenceInHours === 0) {
+        task.lastUpdated = 'a few moments ago';
+        task.lastUpdatedColor = 'text-green-500 dark:text-green-400';
+      } else {
+        task.lastUpdated = `${differenceInHours} hours ago`;
+        task.lastUpdatedColor = 'text-green-200 dark:text-green-100';
+      }
+    } else {
+      if (differenceInDays === 1) {
+        task.lastUpdated = 'Yesterday';
+        task.lastUpdatedColor = 'text-green-600 dark:text-green-500';
+      } else {
+        task.lastUpdated = `${differenceInDays} days ago`;
+        task.lastUpdatedColor = 'text-red-500 dark:text-red-400';
+      }
+    }
+
+    task.lastUpdatedAt = lastTs;
   }
 
 }

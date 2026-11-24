@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AppService } from '../../services/app.service';
@@ -8,7 +8,8 @@ import { TOAST_TYPE, Category, ViewMode } from '../../services/interfaces';
 import { CheckboxItemComponent } from '../../components/checkbox-item/checkbox-item.component';
 import { KanbanBoardComponent } from '../../components/kanban-board/kanban-board.component';
 import { SearchBoxComponent } from '../../components/search-box/search-box.component';
-import { ActivatedRoute } from '@angular/router';
+import { TagChipsComponent } from '../../components/tag-chips/tag-chips.component';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { StoreService } from '../../services/store.service';
 
 export interface CategoryCount {
@@ -26,7 +27,7 @@ interface QuickSelection {
 @Component({
   selector: 'app-todos',
   standalone: true,
-  imports: [FormsModule, CommonModule, CheckboxItemComponent, KanbanBoardComponent, SearchBoxComponent],
+  imports: [FormsModule, CommonModule, RouterLink, CheckboxItemComponent, KanbanBoardComponent, SearchBoxComponent, TagChipsComponent],
   templateUrl: './todos.component.html',
   styleUrl: './todos.component.scss'
 })
@@ -34,6 +35,7 @@ export class TodosComponent implements OnInit {
   viewMode: ViewMode = 'board';
   showCategoriesModal = false;
   showQuickSelectionModal = false;
+  showTagFilter = false;
   scrollToColumnId: number | 'uncategorized' | null = null;
   quickSelections: QuickSelection[] = [];
 
@@ -74,6 +76,15 @@ export class TodosComponent implements OnInit {
     setTimeout(() => {
       this.scrollToColumnId = null;
     }, 500);
+  }
+
+  toggleTagFilter(): void {
+    this.showTagFilter = !this.showTagFilter;
+  }
+
+  @HostListener('document:keydown.escape')
+  closeTagFilter(): void {
+    this.showTagFilter = false;
   }
 
   openQuickSelectionModal(): void {
